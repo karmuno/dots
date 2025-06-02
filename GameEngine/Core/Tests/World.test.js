@@ -1,9 +1,11 @@
 // GameEngine/Core/Tests/World.test.js
-const World = require('../World');
-// Entity is used by World, but we might not need to require it directly in tests if World's methods are black-boxed
-// However, for verification (like checking instance type), it can be useful.
-const Entity = require('../Entity');
+import World from '../World.js';
+import Entity from '../Entity.js';
+import BoundaryEntity from '../../Entities/BoundaryEntity.js';
+import GrowthSystem from '../../Systems/GrowthSystem.js';
+import RadiusComponent from '../../Components/RadiusComponent.js';
 
+// Mock a generic system for some tests
 class TestSystem {
   constructor() {
     this.updated = false;
@@ -14,67 +16,137 @@ class TestSystem {
     this.updated = true;
     this.worldInstance = world;
     this.dtPassed = dt;
-    // console.log(`TestSystem update called. World entities: ${Object.keys(world.entities).length}, dt: ${dt}`);
   }
 }
 
-console.log('Running World Tests...');
-const world = new World();
+describe('World', () => {
+  let world;
 
-// Test 1: createEntity
-const entity = world.createEntity();
-console.assert(entity instanceof Entity, 'Test Failed: createEntity should return an Entity instance.');
-console.assert(world.entities[entity.id] === entity, 'Test Failed: Entity not stored correctly in world.');
-console.log('Test 1 Passed: createEntity.');
+  beforeEach(() => {
+    world = new World(); // Creates a new world before each test
+  });
 
-// Test 2: getEntityById
-const retrievedEntity = world.getEntityById(entity.id);
-console.assert(retrievedEntity === entity, 'Test Failed: getEntityById did not retrieve the correct entity.');
-console.log('Test 2 Passed: getEntityById.');
+  describe('Core Entity Management', () => {
+    test('createEntity should return an Entity instance and store it', () => {
+      const entity = world.createEntity();
+      expect(entity).toBeInstanceOf(Entity);
+      expect(world.entities[entity.id]).toBe(entity);
+    });
 
-// Test 3: destroyEntity
-const entityId = entity.id;
-world.destroyEntity(entityId);
-console.assert(typeof world.entities[entityId] === 'undefined', 'Test Failed: Entity not removed by destroyEntity.');
-console.assert(typeof world.getEntityById(entityId) === 'undefined', 'Test Failed: getEntityById should return undefined for destroyed entity.');
-console.log('Test 3 Passed: destroyEntity.');
+    test('getEntityById should retrieve the correct entity', () => {
+      const entity = world.createEntity();
+      const retrievedEntity = world.getEntityById(entity.id);
+      expect(retrievedEntity).toBe(entity);
+    });
 
-// Test 4: addSystem
-const testSystem = new TestSystem();
-world.addSystem(testSystem);
-console.assert(world.systems.includes(testSystem), 'Test Failed: System not added to world.');
-console.log('Test 4 Passed: addSystem.');
+    test('getEntityById should return undefined for a non-existent ID', () => {
+      const retrievedEntity = world.getEntityById('nonExistentId');
+      expect(retrievedEntity).toBeUndefined();
+    });
+    
+    test('destroyEntity should remove the entity from the world', () => {
+      const entity = world.createEntity();
+      const entityId = entity.id;
+      world.destroyEntity(entityId);
+      expect(world.entities[entityId]).toBeUndefined();
+      expect(world.getEntityById(entityId)).toBeUndefined();
+    });
+  });
 
-// Test 5: update calls system.update
-world.update(16.67); // Simulate a frame update
-console.assert(testSystem.updated, 'Test Failed: System.update was not called by world.update.');
-console.assert(testSystem.worldInstance === world, 'Test Failed: World instance not passed correctly to system.update.');
-console.assert(testSystem.dtPassed === 16.67, 'Test Failed: Delta time not passed correctly to system.update.');
-console.log('Test 5 Passed: update calls system.update correctly.');
+  describe('System Management', () => {
+    test('addSystem should add a system to the world', () => {
+      const testSystem = new TestSystem();
+      world.addSystem(testSystem);
+      expect(world.systems).toContain(testSystem);
+    });
 
-// Test 6: removeSystem
-world.removeSystem(testSystem);
-console.assert(!world.systems.includes(testSystem), 'Test Failed: System not removed from world.');
-console.log('Test 6 Passed: removeSystem.');
+    test('removeSystem should remove a system from the world', () => {
+      const testSystem = new TestSystem();
+      world.addSystem(testSystem);
+      world.removeSystem(testSystem);
+      expect(world.systems).not.toContain(testSystem);
+    });
 
-// Test 7: Update does not fail with no systems
-const world2 = new World();
-try {
-    world2.update(10);
-    console.log('Test 7 Passed: world.update with no systems does not crash.');
-} catch (e) {
-    console.assert(false, `Test Failed: world.update with no systems crashed. ${e}`);
-}
+    test('update should call system.update on all added systems', () => {
+      const testSystem1 = new TestSystem();
+      const testSystem2 = new TestSystem();
+      world.addSystem(testSystem1);
+      world.addSystem(testSystem2);
 
-// Test 8: Update does not fail with systems that don't have an update method (or it's not a function)
-const world3 = new World();
-world3.addSystem({}); // System without an update method
-world3.addSystem({ update: "not a function" }); // System with update not being a function
-try {
-    world3.update(10);
-    console.log('Test 8 Passed: world.update with invalid systems does not crash.');
-} catch (e) {
-    console.assert(false, `Test Failed: world.update with invalid systems crashed. ${e}`);
-}
+      world.update(16.67);
 
-console.log('World Tests Finished.');
+      expect(testSystem1.updated).toBe(true);
+      expect(testSystem1.worldInstance).toBe(world);
+      expect(testSystem1.dtPassed).toBe(16.67);
+
+      expect(testSystem2.updated).toBe(true);
+      expect(testSystem2.worldInstance).toBe(world);
+      expect(testSystem2.dtPassed).toBe(16.67);
+    });
+
+    test('update should not fail with no systems', () => {
+      expect(() => world.update(10)).not.toThrow();
+    });
+
+    test('update should handle systems without an update method or where update is not a function', () => {
+      world.addSystem({}); // System without an update method
+      world.addSystem({ update: "not a function" }); // System with update not a function
+      expect(() => world.update(10)).not.toThrow();
+    });
+  });
+
+  describe('BoundaryEntity and GrowthSystem Integration', () => {
+    test('constructor should create a BoundaryEntity', () => {
+      // The world constructor itself creates a BoundaryEntity.
+      // We need to find it among the entities.
+      let foundBoundary = null;
+      for (const id in world.entities) {
+        if (world.entities[id] instanceof BoundaryEntity) {
+          foundBoundary = world.entities[id];
+          break;
+        }
+      }
+      expect(foundBoundary).toBeInstanceOf(BoundaryEntity);
+      expect(world.boundary).toBe(foundBoundary); // Check direct reference
+    });
+
+    test('constructor should add GrowthSystem to its systems', () => {
+      const growthSystemInstance = world.systems.find(system => system instanceof GrowthSystem);
+      expect(growthSystemInstance).toBeInstanceOf(GrowthSystem);
+    });
+
+    test('world.update should trigger boundary growth via GrowthSystem', () => {
+      const boundaryEntity = world.boundary;
+      const initialRadius = boundaryEntity.getComponent('RadiusComponent').radius;
+      const growComponent = boundaryEntity.getComponent('GrowComponent');
+      
+      // Simulate enough time for one growth cycle
+      const dtForOneCycle = growComponent.interval / 1000; // Convert ms to s
+
+      world.update(dtForOneCycle);
+
+      const newRadius = boundaryEntity.getComponent('RadiusComponent').radius;
+      expect(newRadius).toBe(initialRadius + growComponent.growthRate);
+    });
+
+    test('destroyEntity should nullify world.boundary if the boundary entity is destroyed', () => {
+      const boundaryEntity = world.boundary;
+      expect(boundaryEntity).not.toBeNull();
+      world.destroyEntity(boundaryEntity.id);
+      expect(world.boundary).toBeNull();
+      expect(world.entities[boundaryEntity.id]).toBeUndefined();
+    });
+
+    test('destroyEntity on a non-boundary entity should not nullify world.boundary', () => {
+        const otherEntity = world.createEntity();
+        const boundaryBeforeDestroy = world.boundary;
+        expect(boundaryBeforeDestroy).not.toBeNull(); // Boundary exists
+
+        world.destroyEntity(otherEntity.id); // Destroy a different entity
+
+        expect(world.boundary).toBe(boundaryBeforeDestroy); // Boundary reference should be unchanged
+        expect(world.boundary).not.toBeNull();
+        expect(world.entities[otherEntity.id]).toBeUndefined(); // Other entity is gone
+    });
+  });
+});
