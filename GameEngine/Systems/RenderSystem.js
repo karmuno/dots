@@ -49,7 +49,7 @@ class RenderSystem {
                     context.closePath();
 
                     if (entity === this.worldView.world.selectedEntity) {
-                        context.strokeStyle = 'white';
+                        context.strokeStyle = 'black';
                         context.lineWidth = 2;
                         context.beginPath();
                         // Draw outline slightly outside the filled circle
@@ -68,7 +68,7 @@ class RenderSystem {
                     context.fillRect(rectX, rectY, width, height);
 
                     if (entity === this.worldView.world.selectedEntity) {
-                        context.strokeStyle = 'white';
+                        context.strokeStyle = 'black';
                         context.lineWidth = 2;
                         // Draw outline slightly outside the filled rectangle
                         context.strokeRect(rectX - context.lineWidth / 2, rectY - context.lineWidth / 2, width + context.lineWidth, height + context.lineWidth);
@@ -80,7 +80,7 @@ class RenderSystem {
                     context.fillRect(drawX, drawY, spriteSize.width, spriteSize.height);
 
                     if (entity === this.worldView.world.selectedEntity) {
-                        context.strokeStyle = 'white';
+                        context.strokeStyle = 'black';
                         context.lineWidth = 2;
                         // Draw outline slightly outside the filled sprite
                         context.strokeRect(drawX - context.lineWidth / 2, drawY - context.lineWidth / 2, spriteSize.width + context.lineWidth, spriteSize.height + context.lineWidth);

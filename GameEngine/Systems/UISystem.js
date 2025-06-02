@@ -1,9 +1,10 @@
 import InspectableComponent from '../Components/InspectableComponent.js';
 
 class UISystem {
-    constructor(world, dotSheet) {
+    constructor(world, dotSheet, colorPicker) {
         this.world = world;
         this.dotSheet = dotSheet;
+        this.colorPicker = colorPicker;
     }
 
     selectNextInspectableEntity() {
@@ -45,6 +46,16 @@ class UISystem {
         } else {
             console.warn("UISystem: DotSheet or displayEntityInfo method not available.");
         }
+
+        // Update color picker to match the selected entity's color
+        if (this.colorPicker && this.world.selectedEntity && this.world.selectedEntity.components.Appearance) {
+            const color = this.world.selectedEntity.components.Appearance.color;
+            const r = parseInt(color.slice(1, 3), 16);
+            const g = parseInt(color.slice(3, 5), 16);
+            const b = parseInt(color.slice(5, 7), 16);
+            this.colorPicker.setColor(r, g, b, true); // Silent update to avoid triggering change event
+        }
+
         console.log("UISystem: Selected entity:", this.world.selectedEntity ? this.world.selectedEntity.id : 'none');
     }
 }
