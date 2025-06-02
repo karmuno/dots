@@ -86,8 +86,16 @@ The current version allows for the following interactions:
     *   An RGB color customization panel is available. Use the sliders to select Red, Green, and Blue values.
     *   A preview will show the selected color. Click an "Apply" button (or similar) to change the Dot's color in real-time.
 *   **Inspect the Dot:**
-    *   Clicking on the Dot will bring up a "Dot Sheet" panel.
-    *   This panel displays basic information about the Dot, such as its ID, current RGB color, position, speed, age (time since simulation start), and the current world radius.
+    *   Dot selection is now primarily handled via UI buttons. Clicking on a Dot on the canvas no longer selects it.
+    *   The "Dot Sheet" panel displays information about the currently selected Dot (ID, RGB color, position, speed, age, world radius).
+*   **Control Buttons:**
+    *   **Next Dot:** Selects the next available inspectable Dot in the simulation.
+    *   **Previous Dot:** Selects the previous available inspectable Dot.
+    *   **Create Dot:** Spawns a new Dot with random properties and selects it.
+    *   **Delete Dot:** Deletes the currently selected Dot. The system will then attempt to select another Dot.
+*   **Camera Controls:**
+    *   **Pan:** Left-click and drag on the canvas to move the camera view.
+    *   **Zoom:** Use the mouse wheel to zoom in and out.
 
 **Future Interactions:**
 

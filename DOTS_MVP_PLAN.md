@@ -13,9 +13,15 @@
 - ✅ Random movement system
 - ✅ RGB color customization UI
 - ✅ Expanding circular world boundary
-- ✅ Basic Dot Sheet (info panel)
+- ✅ Basic Dot Sheet (info panel) - *Selection now via UI buttons, not click.*
 - ✅ Clean pixel-art rendering
 - ✅ Extensible system architecture
+- ✅ **Implemented: "Next Dot" button for cycling selection forward.**
+- ✅ **Implemented: "Previous Dot" button for cycling selection backward.**
+- ✅ **Implemented: "Create Dot" button to spawn new random dots (using `world.createDot()`).**
+- ✅ **Implemented: "Delete Dot" button to remove the currently selected dot.**
+- ✅ **Standardized initial dot creation using `world.createDot()`.**
+- ❗ **Removed: "Click to select" dot functionality from canvas.**
 
 **What's OUT (Next Iterations):**
 - ❌ Multiple Dots
@@ -112,7 +118,7 @@ dot = {
 - UI styling and layout
 
 **Day 6: Dot Sheet Panel**
-- Click-to-inspect Dot functionality
+- Click-to-inspect Dot functionality - *Changed: Selection now handled by UI buttons (Next/Previous/Create), direct click on canvas for selection is removed.*
 - Information display (ID, color, position, speed)
 - Real-time stat updates
 - Expandable panel design for future features
