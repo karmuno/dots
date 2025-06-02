@@ -8,9 +8,48 @@ class MovementSystem {
         const transform = entity.getComponent('Transform');
         const movement = entity.getComponent('Movement');
 
-        // Actual movement logic
-        transform.position.x += movement.velocityX * dt;
-        transform.position.y += movement.velocityY * dt;
+        // New movement logic
+        const diffX = movement.targetX - transform.position.x;
+        const diffY = movement.targetY - transform.position.y;
+        const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+
+        if (distance < 1) {
+          movement.currentSpeedX = 0;
+          movement.currentSpeedY = 0;
+          // Optionally, snap to target or mark as arrived
+          // transform.position.x = movement.targetX;
+          // transform.position.y = movement.targetY;
+        } else {
+          const normX = diffX / distance;
+          const normY = diffY / distance;
+
+          const targetSpeedX = normX * movement.speed;
+          const targetSpeedY = normY * movement.speed;
+
+          let accelX = targetSpeedX - movement.currentSpeedX;
+          let accelY = targetSpeedY - movement.currentSpeedY;
+
+          const accelMagnitude = Math.sqrt(accelX * accelX + accelY * accelY);
+          const actualAccel = movement.acceleration * dt;
+
+          if (accelMagnitude > actualAccel) {
+            accelX = (accelX / accelMagnitude) * actualAccel;
+            accelY = (accelY / accelMagnitude) * actualAccel;
+          }
+
+          movement.currentSpeedX += accelX;
+          movement.currentSpeedY += accelY;
+
+          // Clamp speed to maximum speed
+          const currentSpeedMagnitude = Math.sqrt(movement.currentSpeedX * movement.currentSpeedX + movement.currentSpeedY * movement.currentSpeedY);
+          if (currentSpeedMagnitude > movement.speed) {
+            movement.currentSpeedX = (movement.currentSpeedX / currentSpeedMagnitude) * movement.speed;
+            movement.currentSpeedY = (movement.currentSpeedY / currentSpeedMagnitude) * movement.speed;
+          }
+        }
+
+        transform.position.x += movement.currentSpeedX * dt;
+        transform.position.y += movement.currentSpeedY * dt;
       }
     }
   }
