@@ -4,6 +4,7 @@ import Entity from '../Entity.js';
 import BoundaryEntity from '../../Entities/BoundaryEntity.js';
 import GrowthSystem from '../../Systems/GrowthSystem.js';
 import RadiusComponent from '../../Components/RadiusComponent.js';
+import Dot from '../../Entities/Dot.js'; // Added for createDot tests
 
 // Mock a generic system for some tests
 class TestSystem {
@@ -24,6 +25,10 @@ describe('World', () => {
 
   beforeEach(() => {
     world = new World(); // Creates a new world before each test
+    // Mock console functions for each test
+    global.console.log = jest.fn();
+    global.console.warn = jest.fn();
+    global.console.error = jest.fn(); // Also mock error in case
   });
 
   describe('Core Entity Management', () => {
@@ -147,6 +152,117 @@ describe('World', () => {
         expect(world.boundary).toBe(boundaryBeforeDestroy); // Boundary reference should be unchanged
         expect(world.boundary).not.toBeNull();
         expect(world.entities[otherEntity.id]).toBeUndefined(); // Other entity is gone
+    });
+  });
+
+  // New tests for createDot
+  describe('createDot', () => {
+    test('should create a new dot, add it to entities, and return it', () => {
+      const initialEntityCount = Object.keys(world.entities).length;
+      const newDot = world.createDot();
+
+      expect(newDot).toBeInstanceOf(Dot);
+      expect(Object.keys(world.entities).length).toBe(initialEntityCount + 1);
+      expect(world.entities[newDot.id]).toBe(newDot);
+      expect(newDot.id).toMatch(/^dot\d+$/); // e.g., dot1, dot2
+    });
+
+    test('created dot should have essential components', () => {
+      const newDot = world.createDot();
+      expect(newDot.components.Transform).toBeDefined();
+      expect(newDot.components.Movement).toBeDefined();
+      expect(newDot.components.Appearance).toBeDefined();
+      expect(newDot.components.InspectableComponent).toBeDefined(); // Assuming Dot constructor adds this
+    });
+
+    test('created dot should have numerical position and velocity', () => {
+      const newDot = world.createDot();
+      expect(typeof newDot.components.Transform.position.x).toBe('number');
+      expect(typeof newDot.components.Transform.position.y).toBe('number');
+      expect(typeof newDot.components.Movement.velocityX).toBe('number');
+      expect(typeof newDot.components.Movement.velocityY).toBe('number');
+    });
+
+    test('should increment dotCounter and generate unique IDs for multiple dots', () => {
+      const dot1 = world.createDot();
+      expect(dot1.id).toBe(`dot${world.dotCounter}`);
+      const currentCounter = world.dotCounter;
+
+      const dot2 = world.createDot();
+      expect(dot2.id).toBe(`dot${world.dotCounter}`);
+      expect(world.dotCounter).toBe(currentCounter + 1);
+      expect(dot1.id).not.toBe(dot2.id);
+    });
+
+    test('should log the creation of a new dot', () => {
+      const newDot = world.createDot();
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining(`World: Created new dot - ID: ${newDot.id}`)
+      );
+    });
+  });
+
+  // New tests for deleteDot
+  describe('deleteDot', () => {
+    test('should delete an existing dot and return true', () => {
+      const newDot = world.createDot(); // Use createDot to ensure it's a known entity type
+      const entityId = newDot.id;
+      const initialEntityCount = Object.keys(world.entities).length;
+
+      expect(world.entities[entityId]).toBeDefined();
+      const result = world.deleteDot(entityId);
+
+      expect(result).toBe(true);
+      expect(world.entities[entityId]).toBeUndefined();
+      expect(Object.keys(world.entities).length).toBe(initialEntityCount - 1);
+      expect(console.log).toHaveBeenCalledWith(`World: Entity with ID '${entityId}' has been deleted.`);
+    });
+
+    test('should return false and log a warning for a non-existent entityId', () => {
+      const nonExistentId = 'dot-nonexistent';
+      const initialEntityCount = Object.keys(world.entities).length;
+      const result = world.deleteDot(nonExistentId);
+
+      expect(result).toBe(false);
+      expect(Object.keys(world.entities).length).toBe(initialEntityCount); // No change
+      expect(console.warn).toHaveBeenCalledWith(
+        `World: Attempted to delete entity with ID '${nonExistentId}', but it was not found.`
+      );
+    });
+
+    test('should correctly handle deleting the boundary entity and nullify world.boundary', () => {
+      // The world constructor creates a boundary. We need its ID.
+      const boundaryEntity = world.boundary;
+      expect(boundaryEntity).not.toBeNull();
+      const boundaryId = boundaryEntity.id;
+
+      const result = world.deleteDot(boundaryId);
+
+      expect(result).toBe(true);
+      expect(world.entities[boundaryId]).toBeUndefined();
+      expect(world.boundary).toBeNull();
+      expect(console.warn).toHaveBeenCalledWith(
+        `World: The boundary entity (ID: ${boundaryId}) is being deleted. The world edge will be removed.`
+      );
+      expect(console.log).toHaveBeenCalledWith(`World: Entity with ID '${boundaryId}' has been deleted.`);
+    });
+
+    test('deleting a non-boundary dot should not affect world.boundary', () => {
+      const boundaryEntity = world.boundary; // Keep reference
+      const dotToDelete = world.createDot();
+      const dotId = dotToDelete.id;
+
+      expect(dotId).not.toBe(boundaryEntity.id); // Ensure we are not deleting boundary by mistake
+
+      const result = world.deleteDot(dotId);
+
+      expect(result).toBe(true);
+      expect(world.entities[dotId]).toBeUndefined();
+      expect(world.boundary).toBe(boundaryEntity); // Boundary should remain untouched
+      expect(console.log).toHaveBeenCalledWith(`World: Entity with ID '${dotId}' has been deleted.`);
+      expect(console.warn).not.toHaveBeenCalledWith( // Should not log boundary deletion warning
+        expect.stringContaining('The boundary entity')
+      );
     });
   });
 });
