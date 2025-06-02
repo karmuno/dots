@@ -4,6 +4,7 @@ class ColliderComponent extends Component {
   constructor(config = {}) {
     super();
     this.type = config.type;
+    this.fill = config.fill !== undefined ? config.fill : true; // Default to filled collider
     console.log('ColliderComponent config:', config);
 
     if (this.type === 'rectangle') {
