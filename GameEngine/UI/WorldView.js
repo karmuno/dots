@@ -18,6 +18,13 @@ class WorldView {
     getCanvas() {
         return this.canvas;
     }
+
+    setImageSmoothing(enabled) {
+        this.context.imageSmoothingEnabled = enabled;
+        this.context.mozImageSmoothingEnabled = enabled;
+        this.context.webkitImageSmoothingEnabled = enabled;
+        this.context.msImageSmoothingEnabled = enabled;
+    }
 }
 
 export default WorldView;
