@@ -1,13 +1,27 @@
 class RenderSystem {
-    constructor() {
-        // Constructor can be empty or initialize system-specific properties
+    constructor(worldView) {
+        this.worldView = worldView;
     }
 
     render(world) {
-        console.log("RenderSystem: Rendering world...", world);
-        // In a real scenario, this is where you would iterate through entities
-        // with renderable components and draw them to the screen.
-        // For now, it just logs the world object.
+        const context = this.worldView.getContext();
+        this.worldView.clear();
+
+        for (const entity of world.entities) {
+            const appearance = entity.components.Appearance;
+            const transform = entity.components.Transform;
+
+            if (appearance && transform && appearance.shape === 'circle') {
+                const { x, y } = transform.position;
+                const { color, radius } = appearance;
+
+                context.beginPath();
+                context.arc(x, y, radius, 0, Math.PI * 2);
+                context.fillStyle = color;
+                context.fill();
+                context.closePath();
+            }
+        }
     }
 }
 
