@@ -1,6 +1,6 @@
 // GameEngine/Core/Tests/Entity.test.js
-const Entity = require('../Entity');
-const Component = require('../Component'); // Assuming Component is needed if TestComponent extends it
+import Entity from '../Entity.js';
+import Component from '../Component.js';
 
 class TestComponent extends Component {
   constructor() {

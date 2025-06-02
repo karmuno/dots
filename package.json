@@ -1,0 +1,9 @@
+{
+  "name": "dots",
+  "version": "0.1.0",
+  "description": "A sandbox for systems architects—watching simple rules evolve into complex behaviors",
+  "type": "module",
+  "scripts": {
+    "test": "node GameEngine/Core/Tests/Entity.test.js"
+  }
+}
