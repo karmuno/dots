@@ -176,6 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // The GameLoop constructor expects 'world' and 'renderer' (which is our renderSystem)
         const gameLoop = new GameLoop(world, renderSystem);
         console.log("GameLoop instantiated:", gameLoop);
+        
+        // Add dot sheet update to game loop
+        const originalLoop = gameLoop._loop.bind(gameLoop);
+        gameLoop._loop = function(currentTime) {
+            originalLoop(currentTime);
+            dotSheet.update();
+        };
 
         // Helper function to convert single color component to two-digit hex
         function componentToHex(c) {
@@ -188,6 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
         }
 
+        // Initialize color picker to match the dot's initial color
+        const initialColor = dot.components.Appearance.color;
+        const r = parseInt(initialColor.slice(1, 3), 16);
+        const g = parseInt(initialColor.slice(3, 5), 16);
+        const b = parseInt(initialColor.slice(5, 7), 16);
+        colorPicker.setColor(r, g, b, true); // Silent initialization
+        
+        // Initialize dot sheet to show the first dot
+        dotSheet.displayEntityInfo(dot);
+        
         // Setup color picker change listener to update the dot's color
         colorPicker.onColorChange((color) => {
             // console.log("Color changed in picker:", color); // Can be verbose
