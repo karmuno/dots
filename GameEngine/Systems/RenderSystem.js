@@ -24,9 +24,17 @@ class RenderSystem {
                 context.fillStyle = color;
 
                 if (shape === 'circle') {
-                    const { radius } = appearance;
+                    let radiusToUse;
+                    if (entity.components.RadiusComponent) {
+                        radiusToUse = entity.components.RadiusComponent.radius;
+                    } else {
+                        radiusToUse = appearance.radius; // Fallback to Appearance component's radius
+                    }
+                    // Ensure radiusToUse has a sensible default if both are undefined, e.g., 10
+                    radiusToUse = radiusToUse || 10;
+
                     context.beginPath();
-                    context.arc(x, y, radius, 0, Math.PI * 2);
+                    context.arc(x, y, radiusToUse, 0, Math.PI * 2); // Use radiusToUse
                     context.fill();
                     context.closePath();
                 } else if (shape === 'rectangle') {
