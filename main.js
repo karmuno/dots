@@ -64,55 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         worldView.getCanvas().addEventListener('mousedown', function(event) {
             if (event.button === 0) { // Left mouse button
-                // Click detection logic
-                const rect = worldView.getCanvas().getBoundingClientRect();
-                const screenX = event.clientX - rect.left;
-                const screenY = event.clientY - rect.top;
+                // Entity selection logic removed. Now, left-click always initiates panning.
+                // console.log("Canvas mousedown, entity selection disabled, enabling panning."); // Optional debug log
 
-                const worldCoords = worldView.getCamera().screenToWorldCoordinates(screenX, screenY);
-
-                let clickedEntity = null;
-                for (const entityId in world.entities) {
-                    const entity = world.entities[entityId];
-                    if (entity.components.InspectableComponent) {
-                        const transform = entity.components.Transform;
-                        const appearance = entity.components.Appearance; // Or ColliderComponent
-
-                        if (transform && appearance) {
-                            const size = appearance.spriteSize || (appearance.width ? { width: appearance.width, height: appearance.height } : { width: 3, height: 3 }); // Default to 3x3 for Dot if not specified
-                            const entityHalfWidth = size.width / 2;
-                            const entityHalfHeight = size.height / 2;
-
-                            if (worldCoords.x >= transform.position.x - entityHalfWidth &&
-                                worldCoords.x <= transform.position.x + entityHalfWidth &&
-                                worldCoords.y >= transform.position.y - entityHalfHeight &&
-                                worldCoords.y <= transform.position.y + entityHalfHeight) {
-                                clickedEntity = entity;
-                                break; 
-                            }
-                        }
-                    }
-                }
-
-                world.selectedEntity = clickedEntity; // Use world.selectedEntity
-                dotSheet.displayEntityInfo(world.selectedEntity);
-                
-                // Update color picker to match the selected entity's color
-                if (world.selectedEntity && world.selectedEntity.components.Appearance) {
-                    const color = world.selectedEntity.components.Appearance.color;
-                    const r = parseInt(color.slice(1, 3), 16);
-                    const g = parseInt(color.slice(3, 5), 16);
-                    const b = parseInt(color.slice(5, 7), 16);
-                    colorPicker.setColor(r, g, b, true); // Silent update to avoid triggering change event
-                }
-
-                if (!world.selectedEntity) { // Check world.selectedEntity
-                    isPanning = true;
-                    lastMouseX = event.clientX;
-                    lastMouseY = event.clientY;
-                } else {
-                    isPanning = false; 
-                }
+                isPanning = true;
+                lastMouseX = event.clientX;
+                lastMouseY = event.clientY;
             }
         });
 
@@ -168,27 +125,26 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("World.addSystem is not a function. Systems not added.");
         }
 
-        // Create 2 randomly colored dots with random movement
-        const dots = [];
-        for (let i = 0; i < 2; i++) {
-            const randomVelocityX = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
-            const randomVelocityY = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
-            // Random position within 50 pixels of center
-            const angle = Math.random() * 2 * Math.PI;
-            const distance = Math.random() * 50;
-            const randomX = Math.cos(angle) * distance;
-            const randomY = Math.sin(angle) * distance;
-            const dot = new Dot(`dot${i + 1}`, randomX, randomY, randomVelocityX, randomVelocityY);
-            dots.push(dot);
-            
-            // Add the dot to the world
-            if (typeof world.addEntity === 'function') {
-                world.addEntity(dot);
-                console.log(`Random dot ${i + 1} added to world:`, dot);
+        // Create 2 initial dots using world.createDot()
+        const dots = []; // Keep this array to easily reference the created dots, e.g., for firstDot initialization
+        const numberOfInitialDots = 2;
+        console.log(`Main: Creating ${numberOfInitialDots} initial dots...`);
+        for (let i = 0; i < numberOfInitialDots; i++) {
+            if (typeof world.createDot === 'function') {
+                const newDot = world.createDot(); // createDot handles adding to world and logging
+                if (newDot) {
+                    dots.push(newDot);
+                    console.log(`Main: Dot ${newDot.id} created and added to local 'dots' array.`);
+                } else {
+                    console.error(`Main: world.createDot() did not return a dot on iteration ${i}.`);
+                }
             } else {
-                console.error("World.addEntity is not a function. Dot not added.");
+                console.error("Main: world.createDot is not a function. Cannot create initial dots.");
+                // Potentially break or throw an error here if critical
+                break; 
             }
         }
+        console.log(`Main: Finished creating ${dots.length} initial dots.`);
 
         // Instantiate the game loop with the world and renderer
         // The GameLoop constructor expects 'world' and 'renderer' (which is our renderSystem)
@@ -214,12 +170,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Initialize color picker to match the first dot's initial color
-        const firstDot = dots[0];
-        const initialColor = firstDot.components.Appearance.color;
-        const r = parseInt(initialColor.slice(1, 3), 16);
-        const g = parseInt(initialColor.slice(3, 5), 16);
-        const b = parseInt(initialColor.slice(5, 7), 16);
-        colorPicker.setColor(r, g, b, true); // Silent initialization
+        // Ensure there's at least one dot created before trying to access it
+        if (dots.length > 0) {
+            const firstDot = dots[0];
+            const initialColor = firstDot.components.Appearance.color;
+            const r = parseInt(initialColor.slice(1, 3), 16);
+            const g = parseInt(initialColor.slice(3, 5), 16);
+            const b = parseInt(initialColor.slice(5, 7), 16);
+            colorPicker.setColor(r, g, b, true); // Silent initialization
+        }
         
         // Initialize dot sheet to show the first dot
         // dotSheet.displayEntityInfo(firstDot); // UISystem might select one, or leave it unselected.
@@ -227,12 +186,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // For now, let UISystem handle initial selection if any, or user interaction.
         // If `firstDot` should be selected initially, it must have InspectableComponent.
         // Let's ensure the first dot is selected if it's inspectable.
-        if (firstDot.components.InspectableComponent) {
-            world.selectedEntity = firstDot; // Set it on the world
-            dotSheet.displayEntityInfo(world.selectedEntity); // Update dotSheet
+        // Ensure there's at least one dot created
+        if (dots.length > 0) {
+            const firstDot = dots[0]; // Re-reference for clarity in this block
+            if (firstDot.components.InspectableComponent) {
+                world.selectedEntity = firstDot; // Set it on the world
+                dotSheet.displayEntityInfo(world.selectedEntity); // Update dotSheet
+                console.log(`Main: Initialized selection and dot sheet with ${firstDot.id}`);
+            } else {
+                // If the initial dot is not inspectable (though Dot constructor should add it),
+                // select the next available inspectable entity.
+                console.warn(`Main: First created dot ${firstDot.id} is not inspectable. Attempting to select next.`);
+                uiSystem.selectNextInspectableEntity();
+            }
         } else {
-            // If the initial dot is not inspectable, we can select the first available inspectable entity
-            uiSystem.selectNextInspectableEntity(); 
+            console.warn("Main: No dots were created, skipping initial selection and color picker setup for a dot.");
+            // Optionally, clear dotSheet or set a default state if no entities are present
+            dotSheet.clearDisplay(); // Example: clear display if no dots
         }
         
         // Setup color picker change listener to update the selected dot's color
@@ -269,6 +239,129 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else {
             console.warn("Next Dot button not found.");
+        }
+
+        // TODO: Add a "Previous Dot" button to index.html with id="previousDotButton"
+        // Example: <button id="previousDotButton">Previous Dot</button>
+        // This button would typically be placed near the "Next Dot" button.
+
+        // Event listener for "Previous Dot" button
+        const previousDotButton = document.getElementById('previousDotButton');
+        if (previousDotButton) {
+            previousDotButton.addEventListener('click', () => {
+                console.log("Previous Dot button clicked");
+                if (uiSystem) {
+                    uiSystem.selectPreviousInspectableEntity();
+                } else {
+                    console.error("UISystem not available");
+                }
+            });
+        } else {
+            console.warn("Previous Dot button not found.");
+        }
+
+        // TODO: Add a "Create Dot" button to index.html with id="createDotButton"
+        // Example: <button id="createDotButton">Create Dot</button>
+        // This button could be placed alongside other control buttons.
+
+        // Event listener for "Create Dot" button
+        const createDotButton = document.getElementById('createDotButton');
+        if (createDotButton) {
+            createDotButton.addEventListener('click', () => {
+                console.log("Create Dot button clicked");
+                if (!world || typeof world.createDot !== 'function') {
+                    console.error("World or world.createDot() method not available.");
+                    return;
+                }
+
+                const newDot = world.createDot();
+                if (newDot) {
+                    console.log(`Main: New dot ${newDot.id} created by button.`);
+                    world.selectedEntity = newDot; // Make the new dot the selected entity
+
+                    if (dotSheet && typeof dotSheet.displayEntityInfo === 'function') {
+                        dotSheet.displayEntityInfo(world.selectedEntity);
+                    } else {
+                        console.warn("DotSheet or displayEntityInfo method not available for new dot.");
+                    }
+
+                    // Update color picker to new dot's color
+                    if (colorPicker && newDot.components.Appearance) {
+                        const color = newDot.components.Appearance.color;
+                        try {
+                            const r = parseInt(color.slice(1, 3), 16);
+                            const g = parseInt(color.slice(3, 5), 16);
+                            const b = parseInt(color.slice(5, 7), 16);
+                            colorPicker.setColor(r, g, b, true); // Silent update
+                            console.log(`Main: Color picker updated to ${newDot.id}'s color (${color}).`);
+                        } catch (e) {
+                            console.error("Error parsing color for color picker:", e);
+                        }
+                    } else {
+                        console.warn("ColorPicker or Appearance component not available for new dot.");
+                    }
+                } else {
+                    console.error("Main: world.createDot() failed to return a new dot when invoked by button.");
+                }
+            });
+        } else {
+            console.warn("Create Dot button not found.");
+        }
+
+        // TODO: Add a "Delete Dot" button to index.html with id="deleteDotButton"
+        // Example: <button id="deleteDotButton">Delete Selected Dot</button>
+        // This button would typically be placed near other entity manipulation buttons.
+
+        // Event listener for "Delete Dot" button
+        const deleteDotButton = document.getElementById('deleteDotButton');
+        if (deleteDotButton) {
+            deleteDotButton.addEventListener('click', () => {
+                console.log("Delete Dot button clicked.");
+
+                if (!world || typeof world.deleteDot !== 'function') {
+                    console.error("World or world.deleteDot() method not available.");
+                    return;
+                }
+                if (!uiSystem || typeof uiSystem.selectNextInspectableEntity !== 'function') {
+                    console.error("UISystem or selectNextInspectableEntity method not available.");
+                    return;
+                }
+
+                if (world.selectedEntity) {
+                    const selectedDotId = world.selectedEntity.id;
+                    console.log(`Main: Attempting to delete selected dot: ${selectedDotId}`);
+                    
+                    const deleteSuccess = world.deleteDot(selectedDotId);
+
+                    if (deleteSuccess) {
+                        console.log(`Main: Dot ${selectedDotId} successfully deleted from world.`);
+                        world.selectedEntity = null; // Clear current selection
+
+                        // Attempt to select the next inspectable entity.
+                        // selectNextInspectableEntity should handle UI updates (dotSheet, colorPicker)
+                        // and the case where no more inspectable entities are left.
+                        uiSystem.selectNextInspectableEntity();
+                        console.log("Main: Called selectNextInspectableEntity after deletion.");
+                        
+                        // If after selectNextInspectableEntity, there's no selected entity,
+                        // it implies no inspectable entities are left.
+                        // The selectNextInspectableEntity method in UISystem should ideally clear the dotSheet
+                        // and colorPicker if no entity becomes selected.
+                        // Explicitly:
+                        if (!world.selectedEntity && dotSheet && typeof dotSheet.clearDisplay === 'function') {
+                             // console.log("Main: No entity selected after deletion and next attempt, clearing dotSheet.");
+                             // dotSheet.clearDisplay(); // This might be redundant if UISystem handles it.
+                        }
+
+                    } else {
+                        console.warn(`Main: Failed to delete dot ${selectedDotId} from world (world.deleteDot returned false).`);
+                    }
+                } else {
+                    console.log("Main: No dot selected to delete.");
+                }
+            });
+        } else {
+            console.warn("Delete Dot button not found.");
         }
 
         // Event listener for "Tab" key
