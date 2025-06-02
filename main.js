@@ -3,7 +3,7 @@ import GameLoop from './GameEngine/Core/GameLoop.js';
 import World from './GameEngine/Core/World.js';
 import RenderSystem from './GameEngine/Systems/RenderSystem.js';
 import MovementSystem from './GameEngine/Systems/MovementSystem.js';
-import TargetAssignmentSystem from './GameEngine/Systems/TargetAssignmentSystem.js'; // Added import
+// import TargetAssignmentSystem from './GameEngine/Systems/TargetAssignmentSystem.js'; // Removed import
 import CollisionSystem from './GameEngine/Systems/CollisionSystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
 import ColorPicker from './GameEngine/UI/ColorPicker.js'; // Import ColorPicker
@@ -93,21 +93,21 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("MovementSystem instantiated:", movementSystem);
 
         // Instantiate the target assignment system
-        const targetAssignmentSystem = new TargetAssignmentSystem();
-        console.log("TargetAssignmentSystem instantiated:", targetAssignmentSystem);
+        // const targetAssignmentSystem = new TargetAssignmentSystem(); // Removed instantiation
+        // console.log("TargetAssignmentSystem instantiated:", targetAssignmentSystem);
         
         // Instantiate the collision system
         const collisionSystem = new CollisionSystem();
         console.log("CollisionSystem instantiated:", collisionSystem);
         
         // Add systems to the world
-        // IMPORTANT: Add TargetAssignmentSystem BEFORE MovementSystem
+        // IMPORTANT: TargetAssignmentSystem was removed
         if (typeof world.addSystem === 'function') {
             world.addSystem(renderSystem); // Render system usually first or last
-            world.addSystem(targetAssignmentSystem); // Assign targets first
+            // world.addSystem(targetAssignmentSystem); // Assign targets first // Removed
             world.addSystem(movementSystem); // Then move based on targets
             world.addSystem(collisionSystem); // Collision system after movement
-            console.log("RenderSystem, TargetAssignmentSystem, MovementSystem, and CollisionSystem added to world.");
+            console.log("RenderSystem, MovementSystem, and CollisionSystem added to world.");
         } else {
             console.error("World.addSystem is not a function. Systems not added.");
         }
