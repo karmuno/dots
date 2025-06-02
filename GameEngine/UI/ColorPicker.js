@@ -87,6 +87,22 @@ class ColorPicker {
         return { r: this.r, g: this.g, b: this.b };
     }
 
+    setColor(r, g, b, silent = false) {
+        this.r = Math.max(0, Math.min(255, parseInt(r)));
+        this.g = Math.max(0, Math.min(255, parseInt(g)));
+        this.b = Math.max(0, Math.min(255, parseInt(b)));
+        
+        // Update slider values
+        this.rSlider.slider.value = this.r;
+        this.gSlider.slider.value = this.g;
+        this.bSlider.slider.value = this.b;
+        
+        this.updateColorDisplay();
+        if (!silent) {
+            this.notifyListeners();
+        }
+    }
+
     onColorChange(callback) {
         this.listeners.push(callback);
     }
