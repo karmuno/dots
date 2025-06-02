@@ -172,6 +172,9 @@ export default class CollisionSystem {
                   movementDot.velocityX -= 2 * dotProduct * normalX;
                   movementDot.velocityY -= 2 * dotProduct * normalY;
                 }
+                
+                // Set flag to request new target after collision
+                movementDot.needsNewTarget = true;
               }
 
             } else {
@@ -182,10 +185,12 @@ export default class CollisionSystem {
               if (movementA) {
                 movementA.velocityX *= -1;
                 movementA.velocityY *= -1;
+                movementA.needsNewTarget = true;
               }
               if (movementB) {
                 movementB.velocityX *= -1;
                 movementB.velocityY *= -1;
+                movementB.needsNewTarget = true;
               }
 
               // Basic positional correction (optional, and might need refinement)

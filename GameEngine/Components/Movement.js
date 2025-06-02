@@ -25,5 +25,6 @@ export default class Movement extends Component {
     this.acceleration = acceleration;
     this.currentSpeedX = velocityX;
     this.currentSpeedY = velocityY;
+    this.needsNewTarget = false;
   }
 }

@@ -8,6 +8,15 @@ class MovementSystem {
         const transform = entity.getComponent('Transform');
         const movement = entity.getComponent('Movement');
 
+        // Check if entity needs a new target due to collision
+        if (movement.needsNewTarget) {
+          const angle = Math.random() * 2 * Math.PI;
+          const distance = Math.random() * 100;
+          movement.targetX = transform.position.x + Math.cos(angle) * distance;
+          movement.targetY = transform.position.y + Math.sin(angle) * distance;
+          movement.needsNewTarget = false;
+        }
+
         // New movement logic
         const diffX = movement.targetX - transform.position.x;
         const diffY = movement.targetY - transform.position.y;
