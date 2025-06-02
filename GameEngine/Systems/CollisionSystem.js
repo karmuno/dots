@@ -61,7 +61,7 @@ export default class CollisionSystem {
             (colliderA.type === 'rectangle' && colliderB.type === 'circle')
           ) {
             // CIRCLE-RECTANGLE COLLISION
-            const circleEntity = colliderA.type === 'circle' ? entityA : entityB; // Identify the entity that is the circle
+            const circleEntity = colliderA.type === 'circle' ? entityA : entityB;
             const circleCollider = colliderA.type === 'circle' ? colliderA : colliderB;
             const circleTransform = colliderA.type === 'circle' ? transformA : transformB;
             const rectCollider = colliderA.type === 'rectangle' ? colliderA : colliderB;
@@ -79,14 +79,24 @@ export default class CollisionSystem {
             const rw = rectCollider.width;
             const rh = rectCollider.height;
 
-            const closestX = clamp(cx, rx - rw / 2, rx + rw / 2);
-            const closestY = clamp(cy, ry - rh / 2, ry + rh / 2);
+            if (circleCollider.fill === false) {
+              // Hollow circle collision - only detect when rectangle is trying to go outside
+              const distanceFromCenter = Math.sqrt((rx - cx) * (rx - cx) + (ry - cy) * (ry - cy));
+              const rectRadius = Math.max(rw, rh) / 2; // Rectangle's effective radius
+              
+              // Collision occurs when rectangle is trying to go outside the hollow circle
+              haveCollided = distanceFromCenter + rectRadius > r;
+            } else {
+              // Standard filled circle collision
+              const closestX = clamp(cx, rx - rw / 2, rx + rw / 2);
+              const closestY = clamp(cy, ry - rh / 2, ry + rh / 2);
 
-            const distanceX = cx - closestX;
-            const distanceY = cy - closestY;
-            const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+              const distanceX = cx - closestX;
+              const distanceY = cy - closestY;
+              const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
 
-            haveCollided = distanceSquared < (r * r);
+              haveCollided = distanceSquared < (r * r);
+            }
           }
 
           if (haveCollided) {

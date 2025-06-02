@@ -15,7 +15,7 @@ class BoundaryEntity extends Entity {
     this.addComponent(new Appearance({ shape: 'circle', color: '#CCCCCC' }));
 
     this.addComponent(new RadiusComponent(initialRadius));
-    this.addComponent(new ColliderComponent({ type: 'circle', radius: initialRadius }));
+    this.addComponent(new ColliderComponent({ type: 'circle', radius: initialRadius, fill: false }));
     this.addComponent(new GrowComponent(growthRate, growthInterval));
     
     // Add DrawLayer Component (layer 0 - below dots but above entities without DrawLayer)
