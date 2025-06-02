@@ -1,0 +1,22 @@
+class MovementSystem {
+  update(world, dt) {
+    // Iterate over all entities in the world
+    for (const entity of Object.values(world.entities)) {
+      // Check if the entity has the required components
+      // We'll use strings for component names as defined in Entity.js
+      if (entity.hasComponent('Transform') && entity.hasComponent('Movement')) {
+        // const transform = entity.getComponent('Transform');
+        // const movement = entity.getComponent('Movement');
+
+        // Placeholder: Log information
+        console.log(`MovementSystem: Entity ${entity.id} has Transform and Movement. Delta time: ${dt}ms.`);
+
+        // Actual movement logic would go here, e.g.:
+        // transform.position.x += movement.velocityX * dt;
+        // transform.position.y += movement.velocityY * dt;
+      }
+    }
+  }
+}
+
+module.exports = MovementSystem;
