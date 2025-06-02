@@ -12,7 +12,7 @@ class BoundaryEntity extends Entity {
 
     // Add Transform and Appearance components
     this.addComponent(new Transform(0, 0));
-    this.addComponent(new Appearance({ shape: 'circle', color: '#CCCCCC' }));
+    this.addComponent(new Appearance({ shape: 'circle', color: '#FFFFFF' }));
 
     this.addComponent(new RadiusComponent(initialRadius));
     this.addComponent(new ColliderComponent({ type: 'circle', radius: initialRadius, fill: false }));

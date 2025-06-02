@@ -47,6 +47,16 @@ class RenderSystem {
                     context.arc(x, y, radiusToUse, 0, Math.PI * 2); // Use radiusToUse
                     context.fill();
                     context.closePath();
+
+                    if (entity === this.worldView.world.selectedEntity) {
+                        context.strokeStyle = 'white';
+                        context.lineWidth = 2;
+                        context.beginPath();
+                        // Draw outline slightly outside the filled circle
+                        context.arc(x, y, radiusToUse + context.lineWidth / 2, 0, Math.PI * 2);
+                        context.stroke();
+                        context.closePath();
+                    }
                 } else if (shape === 'rectangle') {
                     const { width, height } = appearance;
                     // Assuming x, y from transform is top-left for rectangles as per typical canvas rect drawing
@@ -56,11 +66,25 @@ class RenderSystem {
                     const rectX = x - width / 2;
                     const rectY = y - height / 2;
                     context.fillRect(rectX, rectY, width, height);
+
+                    if (entity === this.worldView.world.selectedEntity) {
+                        context.strokeStyle = 'white';
+                        context.lineWidth = 2;
+                        // Draw outline slightly outside the filled rectangle
+                        context.strokeRect(rectX - context.lineWidth / 2, rectY - context.lineWidth / 2, width + context.lineWidth, height + context.lineWidth);
+                    }
                 } else if (shape === 'sprite') {
                     const { spriteSize } = appearance; // spriteSize = { width, height }
                     const drawX = x - spriteSize.width / 2;
                     const drawY = y - spriteSize.height / 2;
                     context.fillRect(drawX, drawY, spriteSize.width, spriteSize.height);
+
+                    if (entity === this.worldView.world.selectedEntity) {
+                        context.strokeStyle = 'white';
+                        context.lineWidth = 2;
+                        // Draw outline slightly outside the filled sprite
+                        context.strokeRect(drawX - context.lineWidth / 2, drawY - context.lineWidth / 2, spriteSize.width + context.lineWidth, spriteSize.height + context.lineWidth);
+                    }
                 }
                 // Other shapes if any...
             }

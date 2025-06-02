@@ -5,6 +5,7 @@ import RenderSystem from './GameEngine/Systems/RenderSystem.js';
 import MovementSystem from './GameEngine/Systems/MovementSystem.js';
 // import TargetAssignmentSystem from './GameEngine/Systems/TargetAssignmentSystem.js'; // Removed import
 import CollisionSystem from './GameEngine/Systems/CollisionSystem.js';
+import UISystem from './GameEngine/Systems/UISystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
 import ColorPicker from './GameEngine/UI/ColorPicker.js'; // Import ColorPicker
 import DotSheet from './GameEngine/UI/DotSheet.js';
@@ -35,11 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("World instantiated:", world);
 
         // Create WorldView instance
-        const worldView = new WorldView(800, 600);
+        const worldView = new WorldView(world, 800, 600); // Pass world instance
         console.log("WorldView instantiated:", worldView);
 
         const dotSheet = new DotSheet('dotInfoPanelContainer');
         console.log("DotSheet instantiated:", dotSheet);
+
+        // Instantiate UISystem
+        const uiSystem = new UISystem(world, dotSheet);
+        console.log("UISystem instantiated:", uiSystem);
 
         // Add Camera Controls
         worldView.getCanvas().addEventListener('wheel', function(event) {
@@ -55,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let isPanning = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
-        let selectedEntity = null;
+        // let selectedEntity = null; // Will use world.selectedEntity instead
 
         worldView.getCanvas().addEventListener('mousedown', function(event) {
             if (event.button === 0) { // Left mouse button
@@ -89,10 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                selectedEntity = clickedEntity;
-                dotSheet.displayEntityInfo(selectedEntity);
+                world.selectedEntity = clickedEntity; // Use world.selectedEntity
+                dotSheet.displayEntityInfo(world.selectedEntity);
 
-                if (!selectedEntity) {
+                if (!world.selectedEntity) { // Check world.selectedEntity
                     isPanning = true;
                     lastMouseX = event.clientX;
                     lastMouseY = event.clientY;
@@ -203,7 +208,18 @@ document.addEventListener('DOMContentLoaded', () => {
         colorPicker.setColor(r, g, b, true); // Silent initialization
         
         // Initialize dot sheet to show the first dot
-        dotSheet.displayEntityInfo(dot);
+        // dotSheet.displayEntityInfo(dot); // UISystem might select one, or leave it unselected.
+                                        // Or, explicitly select the first dot via UISystem if desired.
+        // For now, let UISystem handle initial selection if any, or user interaction.
+        // If `dot` should be selected initially, it must have InspectableComponent.
+        // Let's ensure the first dot is selected if it's inspectable.
+        if (dot.components.InspectableComponent) {
+            world.selectedEntity = dot; // Set it on the world
+            dotSheet.displayEntityInfo(world.selectedEntity); // Update dotSheet
+        } else {
+            // If the initial dot is not inspectable, we can select the first available inspectable entity
+            uiSystem.selectNextInspectableEntity(); 
+        }
         
         // Setup color picker change listener to update the dot's color
         colorPicker.onColorChange((color) => {
@@ -229,4 +245,26 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
         console.error("Error initializing game:", error);
     }
+
+    // Event listener for "Next Dot" button
+    const nextDotButton = document.getElementById('nextDotButton');
+    if (nextDotButton) {
+        nextDotButton.addEventListener('click', () => {
+            if (uiSystem) {
+                uiSystem.selectNextInspectableEntity();
+            }
+        });
+    } else {
+        console.warn("Next Dot button not found.");
+    }
+
+    // Event listener for "Tab" key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            if (uiSystem) {
+                uiSystem.selectNextInspectableEntity();
+            }
+        }
+    });
 });
