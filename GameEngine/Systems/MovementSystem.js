@@ -19,4 +19,4 @@ class MovementSystem {
   }
 }
 
-module.exports = MovementSystem;
+export default MovementSystem;
