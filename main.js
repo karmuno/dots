@@ -157,7 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create a randomly colored dot with random movement
         const randomVelocityX = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
         const randomVelocityY = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
-        const dot = new Dot('dot1', 0, 0, randomVelocityX, randomVelocityY); // Start at center
+        // Random position within 50 pixels of center
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = Math.random() * 50;
+        const randomX = Math.cos(angle) * distance;
+        const randomY = Math.sin(angle) * distance;
+        const dot = new Dot('dot1', randomX, randomY, randomVelocityX, randomVelocityY);
         
         // Add the dot to the world
         if (typeof world.addEntity === 'function') {
