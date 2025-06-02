@@ -25,6 +25,9 @@
             align-items: flex-start;
             gap: 20px; /* Adds space between canvas and color picker */
         }
+        #uiContainer canvas {
+            order: 2; /* Canvas appears second (on the right) */
+        }
         #colorPickerContainer {
             padding: 15px;
             border: 1px solid #ccc;
@@ -66,7 +69,6 @@
 </head>
 <body>
     <div id="uiContainer"> <!-- Removed inline style, using CSS rule now -->
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="colorPickerContainer"> <!-- Removed inline style, using CSS rule now -->
             <h3>Color Picker</h3>
             <!-- ColorPicker JS will populate this container -->
