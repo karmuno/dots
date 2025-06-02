@@ -5,6 +5,7 @@ import RenderSystem from './GameEngine/Systems/RenderSystem.js';
 import MovementSystem from './GameEngine/Systems/MovementSystem.js';
 // import TargetAssignmentSystem from './GameEngine/Systems/TargetAssignmentSystem.js'; // Removed import
 import CollisionSystem from './GameEngine/Systems/CollisionSystem.js';
+import UISystem from './GameEngine/Systems/UISystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
 import ColorPicker from './GameEngine/UI/ColorPicker.js'; // Import ColorPicker
 import DotSheet from './GameEngine/UI/DotSheet.js';
@@ -35,11 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("World instantiated:", world);
 
         // Create WorldView instance
-        const worldView = new WorldView(800, 600);
+        const worldView = new WorldView(world, 800, 600); // Pass world instance
         console.log("WorldView instantiated:", worldView);
 
         const dotSheet = new DotSheet('dotInfoPanelContainer');
         console.log("DotSheet instantiated:", dotSheet);
+
+        // Instantiate UISystem
+        const uiSystem = new UISystem(world, dotSheet, colorPicker);
+        console.log("UISystem instantiated:", uiSystem);
 
         // Add Camera Controls
         worldView.getCanvas().addEventListener('wheel', function(event) {
@@ -55,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let isPanning = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
-        let selectedEntity = null;
+        // let selectedEntity = null; // Will use world.selectedEntity instead
 
         worldView.getCanvas().addEventListener('mousedown', function(event) {
             if (event.button === 0) { // Left mouse button
@@ -89,10 +94,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                selectedEntity = clickedEntity;
-                dotSheet.displayEntityInfo(selectedEntity);
+                world.selectedEntity = clickedEntity; // Use world.selectedEntity
+                dotSheet.displayEntityInfo(world.selectedEntity);
+                
+                // Update color picker to match the selected entity's color
+                if (world.selectedEntity && world.selectedEntity.components.Appearance) {
+                    const color = world.selectedEntity.components.Appearance.color;
+                    const r = parseInt(color.slice(1, 3), 16);
+                    const g = parseInt(color.slice(3, 5), 16);
+                    const b = parseInt(color.slice(5, 7), 16);
+                    colorPicker.setColor(r, g, b, true); // Silent update to avoid triggering change event
+                }
 
-                if (!selectedEntity) {
+                if (!world.selectedEntity) { // Check world.selectedEntity
                     isPanning = true;
                     lastMouseX = event.clientX;
                     lastMouseY = event.clientY;
@@ -154,27 +168,26 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("World.addSystem is not a function. Systems not added.");
         }
 
-        // Create a randomly colored dot with random movement
-        const randomVelocityX = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
-        const randomVelocityY = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
-        // Random position within 50 pixels of center
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = Math.random() * 50;
-        const randomX = Math.cos(angle) * distance;
-        const randomY = Math.sin(angle) * distance;
-        const dot = new Dot('dot1', randomX, randomY, randomVelocityX, randomVelocityY);
-        
-        // Add the dot to the world
-        if (typeof world.addEntity === 'function') {
-            world.addEntity(dot);
-            console.log("Random dot added to world:", dot);
-            // console.log("Dot components:", dot.components);
-            // console.log("Dot component names:", Object.keys(dot.components));
-            // console.log("World entities after adding dot:", Object.keys(world.entities));
-            // console.log("Dot transform:", dot.components.Transform);
-            // console.log("Dot appearance:", dot.components.Appearance);
-        } else {
-            console.error("World.addEntity is not a function. Dot not added.");
+        // Create 2 randomly colored dots with random movement
+        const dots = [];
+        for (let i = 0; i < 2; i++) {
+            const randomVelocityX = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
+            const randomVelocityY = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
+            // Random position within 50 pixels of center
+            const angle = Math.random() * 2 * Math.PI;
+            const distance = Math.random() * 50;
+            const randomX = Math.cos(angle) * distance;
+            const randomY = Math.sin(angle) * distance;
+            const dot = new Dot(`dot${i + 1}`, randomX, randomY, randomVelocityX, randomVelocityY);
+            dots.push(dot);
+            
+            // Add the dot to the world
+            if (typeof world.addEntity === 'function') {
+                world.addEntity(dot);
+                console.log(`Random dot ${i + 1} added to world:`, dot);
+            } else {
+                console.error("World.addEntity is not a function. Dot not added.");
+            }
         }
 
         // Instantiate the game loop with the world and renderer
@@ -200,26 +213,38 @@ document.addEventListener('DOMContentLoaded', () => {
             return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
         }
 
-        // Initialize color picker to match the dot's initial color
-        const initialColor = dot.components.Appearance.color;
+        // Initialize color picker to match the first dot's initial color
+        const firstDot = dots[0];
+        const initialColor = firstDot.components.Appearance.color;
         const r = parseInt(initialColor.slice(1, 3), 16);
         const g = parseInt(initialColor.slice(3, 5), 16);
         const b = parseInt(initialColor.slice(5, 7), 16);
         colorPicker.setColor(r, g, b, true); // Silent initialization
         
         // Initialize dot sheet to show the first dot
-        dotSheet.displayEntityInfo(dot);
+        // dotSheet.displayEntityInfo(firstDot); // UISystem might select one, or leave it unselected.
+                                        // Or, explicitly select the first dot via UISystem if desired.
+        // For now, let UISystem handle initial selection if any, or user interaction.
+        // If `firstDot` should be selected initially, it must have InspectableComponent.
+        // Let's ensure the first dot is selected if it's inspectable.
+        if (firstDot.components.InspectableComponent) {
+            world.selectedEntity = firstDot; // Set it on the world
+            dotSheet.displayEntityInfo(world.selectedEntity); // Update dotSheet
+        } else {
+            // If the initial dot is not inspectable, we can select the first available inspectable entity
+            uiSystem.selectNextInspectableEntity(); 
+        }
         
-        // Setup color picker change listener to update the dot's color
+        // Setup color picker change listener to update the selected dot's color
         colorPicker.onColorChange((color) => {
             // console.log("Color changed in picker:", color); // Can be verbose
             const hexColor = rgbToHex(color.r, color.g, color.b);
             // console.log("Converted to Hex:", hexColor); // Can be verbose
-            if (dot && dot.components.Appearance) {
-                dot.components.Appearance.color = hexColor;
-                console.log("Dot color updated to:", hexColor);
+            if (world.selectedEntity && world.selectedEntity.components.Appearance) {
+                world.selectedEntity.components.Appearance.color = hexColor;
+                console.log("Selected dot color updated to:", hexColor);
             } else {
-                console.warn("Attempted to update color, but dot or its Appearance component is missing.");
+                console.warn("Attempted to update color, but selected entity or its Appearance component is missing.");
             }
         });
 
@@ -230,6 +255,34 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.error("GameLoop.start is not a function. Game loop not started.");
         }
+
+        // Event listener for "Next Dot" button
+        const nextDotButton = document.getElementById('nextDotButton');
+        if (nextDotButton) {
+            nextDotButton.addEventListener('click', () => {
+                console.log("Next Dot button clicked");
+                if (uiSystem) {
+                    uiSystem.selectNextInspectableEntity();
+                } else {
+                    console.error("UISystem not available");
+                }
+            });
+        } else {
+            console.warn("Next Dot button not found.");
+        }
+
+        // Event listener for "Tab" key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                console.log("Tab key pressed");
+                if (uiSystem) {
+                    uiSystem.selectNextInspectableEntity();
+                } else {
+                    console.error("UISystem not available");
+                }
+            }
+        });
 
     } catch (error) {
         console.error("Error initializing game:", error);

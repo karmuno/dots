@@ -1,7 +1,8 @@
 import Camera from '../Core/Camera.js'; // Added
 
 class WorldView {
-    constructor(width, height) {
+    constructor(world, width, height) {
+        this.world = world; // Store world
         this.canvas = document.createElement('canvas');
         this.canvas.width = width;
         this.canvas.height = height;
