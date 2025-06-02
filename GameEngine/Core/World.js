@@ -23,6 +23,11 @@ class World {
     return entity;
   }
 
+  addEntity(entity) {
+    this.entities[entity.id] = entity;
+    return entity;
+  }
+
   destroyEntity(entityId) {
     // Also remove from this.boundary if it's the one being destroyed
     if (this.boundary && this.boundary.id === entityId) {

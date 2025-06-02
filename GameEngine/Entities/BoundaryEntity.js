@@ -4,9 +4,10 @@ import ColliderComponent from '../Components/ColliderComponent.js';
 import GrowComponent from '../Components/GrowComponent.js';
 import Transform from '../Components/Transform.js';
 import Appearance from '../Components/Appearance.js';
+import DrawLayer from '../Components/DrawLayer.js';
 
 class BoundaryEntity extends Entity {
-  constructor(initialRadius = 500, growthRate = 20, growthInterval = 1000) {
+  constructor(initialRadius = 100, growthRate = 20, growthInterval = 10000) {
     super();
 
     // Add Transform and Appearance components
@@ -16,6 +17,9 @@ class BoundaryEntity extends Entity {
     this.addComponent(new RadiusComponent(initialRadius));
     this.addComponent(new ColliderComponent());
     this.addComponent(new GrowComponent(growthRate, growthInterval));
+    
+    // Add DrawLayer Component (layer 0 - below dots but above entities without DrawLayer)
+    this.addComponent(new DrawLayer(0));
   }
 }
 
