@@ -43,6 +43,48 @@
             color: #333;
             text-align: center;
         }
+        #dotInfoPanelContainer {
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            width: 220px; /* Same width as color picker for alignment */
+            min-height: 100px; /* Minimum height */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            order: 1; /* To place it between color picker (default order 0) and canvas (order 2) */
+        }
+
+        #dotInfoPanelContainer h4 { /* Style for a potential title */
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #333;
+            text-align: center;
+        }
+
+        #dotInfoPanelContainer p {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .info-group {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .info-group:last-child {
+            border-bottom: none;
+        }
+        .info-item {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #333;
+        }
+
         .color-picker-display {
             width: 100%; /* Make it responsive to container width */
             height: 100px; /* Keep fixed height or make it dynamic */
@@ -72,6 +114,9 @@
         <div id="colorPickerContainer"> <!-- Removed inline style, using CSS rule now -->
             <h3>Color Picker</h3>
             <!-- ColorPicker JS will populate this container -->
+        </div>
+        <div id="dotInfoPanelContainer">
+            <p>Select a dot to see its information.</p>
         </div>
     </div>
     <script type="module" src="main.js"></script>
