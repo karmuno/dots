@@ -1,4 +1,4 @@
-const Entity = require('./Entity'); // Assuming Entity.js is in the same directory
+import Entity from './Entity.js'; // Assuming Entity.js is in the same directory
 
 class World {
   constructor() {
@@ -38,4 +38,4 @@ class World {
   }
 }
 
-module.exports = World;
+export default World;

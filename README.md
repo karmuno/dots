@@ -18,7 +18,21 @@ The project is organized as follows:
 
 ## Getting Started
 
-*(Details on how to clone, install dependencies, and run the project will be added here.)*
+To run the Dots game engine simulation:
+
+1.  **Clone the repository** (if you haven't already):
+    ```bash
+    git clone <repository-url>
+    cd <repository-name>
+    ```
+2.  **Open `index.html` in your web browser:**
+    - Navigate to the root directory of the project.
+    - Open the `index.html` file directly in a modern web browser (e.g., Chrome, Firefox, Safari, Edge).
+3.  **Check the Developer Console:**
+    - Open your browser's developer console (usually by pressing F12 or right-clicking and selecting "Inspect" -> "Console").
+    - You should see log messages indicating that the game loop has started and is running (e.g., "main.js loaded", "DOM fully loaded and parsed", "World instantiated", "RenderSystem instantiated", "GameLoop instantiated", "Game loop started", followed by repeating messages from the game loop like "GameLoop: world.update called..." and "RenderSystem: Rendering world...").
+
+This basic setup runs a simple game loop that logs its operations to the console. Future developments will expand on rendering visuals to the canvas and implementing interactive behaviors.
 
 ## Usage
 
