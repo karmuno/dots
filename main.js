@@ -6,6 +6,7 @@ import MovementSystem from './GameEngine/Systems/MovementSystem.js';
 import TargetAssignmentSystem from './GameEngine/Systems/TargetAssignmentSystem.js'; // Added import
 import CollisionSystem from './GameEngine/Systems/CollisionSystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
+import ColorPicker from './GameEngine/UI/ColorPicker.js'; // Import ColorPicker
 import Dot from './GameEngine/Entities/Dot.js';
 
 // Initial console log to confirm script start
@@ -16,6 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed.");
 
     try {
+        // Get the color picker container
+        const colorPickerContainer = document.getElementById('colorPickerContainer');
+        if (!colorPickerContainer) {
+            console.error("Color picker container not found in DOM.");
+            return;
+        }
+
+        // Create and initialize ColorPicker
+        const colorPicker = new ColorPicker(colorPickerContainer);
+        // Note: onColorChange listener will be set up after 'dot' is created
+        console.log("ColorPicker initialized and attached to container.");
+
         // Instantiate the world
         const world = new World();
         console.log("World instantiated:", world);
@@ -93,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             world.addSystem(renderSystem); // Render system usually first or last
             world.addSystem(targetAssignmentSystem); // Assign targets first
             world.addSystem(movementSystem); // Then move based on targets
-            world.addSystem(collisionSystem);
+            world.addSystem(collisionSystem); // Collision system after movement
             console.log("RenderSystem, TargetAssignmentSystem, MovementSystem, and CollisionSystem added to world.");
         } else {
             console.error("World.addSystem is not a function. Systems not added.");
@@ -108,11 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof world.addEntity === 'function') {
             world.addEntity(dot);
             console.log("Random dot added to world:", dot);
-            console.log("Dot components:", dot.components);
-            console.log("Dot component names:", Object.keys(dot.components));
-            console.log("World entities after adding dot:", Object.keys(world.entities));
-            console.log("Dot transform:", dot.components.Transform);
-            console.log("Dot appearance:", dot.components.Appearance);
+            // console.log("Dot components:", dot.components);
+            // console.log("Dot component names:", Object.keys(dot.components));
+            // console.log("World entities after adding dot:", Object.keys(world.entities));
+            // console.log("Dot transform:", dot.components.Transform);
+            // console.log("Dot appearance:", dot.components.Appearance);
         } else {
             console.error("World.addEntity is not a function. Dot not added.");
         }
@@ -121,6 +134,30 @@ document.addEventListener('DOMContentLoaded', () => {
         // The GameLoop constructor expects 'world' and 'renderer' (which is our renderSystem)
         const gameLoop = new GameLoop(world, renderSystem);
         console.log("GameLoop instantiated:", gameLoop);
+
+        // Helper function to convert single color component to two-digit hex
+        function componentToHex(c) {
+            const hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        // Helper function to convert RGB object to Hex string
+        function rgbToHex(r, g, b) {
+            return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+        }
+
+        // Setup color picker change listener to update the dot's color
+        colorPicker.onColorChange((color) => {
+            // console.log("Color changed in picker:", color); // Can be verbose
+            const hexColor = rgbToHex(color.r, color.g, color.b);
+            // console.log("Converted to Hex:", hexColor); // Can be verbose
+            if (dot && dot.components.Appearance) {
+                dot.components.Appearance.color = hexColor;
+                console.log("Dot color updated to:", hexColor);
+            } else {
+                console.warn("Attempted to update color, but dot or its Appearance component is missing.");
+            }
+        });
 
         // Start the game loop
         if (typeof gameLoop.start === 'function') {
