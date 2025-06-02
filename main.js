@@ -7,6 +7,7 @@ import MovementSystem from './GameEngine/Systems/MovementSystem.js';
 import CollisionSystem from './GameEngine/Systems/CollisionSystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
 import ColorPicker from './GameEngine/UI/ColorPicker.js'; // Import ColorPicker
+import DotSheet from './GameEngine/UI/DotSheet.js';
 import Dot from './GameEngine/Entities/Dot.js';
 
 // Initial console log to confirm script start
@@ -37,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const worldView = new WorldView(800, 600);
         console.log("WorldView instantiated:", worldView);
 
+        const dotSheet = new DotSheet('dotInfoPanelContainer');
+        console.log("DotSheet instantiated:", dotSheet);
+
         // Add Camera Controls
         worldView.getCanvas().addEventListener('wheel', function(event) {
             event.preventDefault();
@@ -51,12 +55,50 @@ document.addEventListener('DOMContentLoaded', () => {
         let isPanning = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
+        let selectedEntity = null;
 
         worldView.getCanvas().addEventListener('mousedown', function(event) {
             if (event.button === 0) { // Left mouse button
-                isPanning = true;
-                lastMouseX = event.clientX;
-                lastMouseY = event.clientY;
+                // Click detection logic
+                const rect = worldView.getCanvas().getBoundingClientRect();
+                const screenX = event.clientX - rect.left;
+                const screenY = event.clientY - rect.top;
+
+                const worldCoords = worldView.getCamera().screenToWorldCoordinates(screenX, screenY);
+
+                let clickedEntity = null;
+                for (const entityId in world.entities) {
+                    const entity = world.entities[entityId];
+                    if (entity.components.InspectableComponent) {
+                        const transform = entity.components.Transform;
+                        const appearance = entity.components.Appearance; // Or ColliderComponent
+
+                        if (transform && appearance) {
+                            const size = appearance.spriteSize || (appearance.width ? { width: appearance.width, height: appearance.height } : { width: 3, height: 3 }); // Default to 3x3 for Dot if not specified
+                            const entityHalfWidth = size.width / 2;
+                            const entityHalfHeight = size.height / 2;
+
+                            if (worldCoords.x >= transform.position.x - entityHalfWidth &&
+                                worldCoords.x <= transform.position.x + entityHalfWidth &&
+                                worldCoords.y >= transform.position.y - entityHalfHeight &&
+                                worldCoords.y <= transform.position.y + entityHalfHeight) {
+                                clickedEntity = entity;
+                                break; 
+                            }
+                        }
+                    }
+                }
+
+                selectedEntity = clickedEntity;
+                dotSheet.displayEntityInfo(selectedEntity);
+
+                if (!selectedEntity) {
+                    isPanning = true;
+                    lastMouseX = event.clientX;
+                    lastMouseY = event.clientY;
+                } else {
+                    isPanning = false; 
+                }
             }
         });
 
@@ -134,6 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // The GameLoop constructor expects 'world' and 'renderer' (which is our renderSystem)
         const gameLoop = new GameLoop(world, renderSystem);
         console.log("GameLoop instantiated:", gameLoop);
+        
+        // Add dot sheet update to game loop
+        const originalLoop = gameLoop._loop.bind(gameLoop);
+        gameLoop._loop = function(currentTime) {
+            originalLoop(currentTime);
+            dotSheet.update();
+        };
 
         // Helper function to convert single color component to two-digit hex
         function componentToHex(c) {
@@ -146,6 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
         }
 
+        // Initialize color picker to match the dot's initial color
+        const initialColor = dot.components.Appearance.color;
+        const r = parseInt(initialColor.slice(1, 3), 16);
+        const g = parseInt(initialColor.slice(3, 5), 16);
+        const b = parseInt(initialColor.slice(5, 7), 16);
+        colorPicker.setColor(r, g, b, true); // Silent initialization
+        
+        // Initialize dot sheet to show the first dot
+        dotSheet.displayEntityInfo(dot);
+        
         // Setup color picker change listener to update the dot's color
         colorPicker.onColorChange((color) => {
             // console.log("Color changed in picker:", color); // Can be verbose

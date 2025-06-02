@@ -33,6 +33,16 @@ class Camera {
         context.scale(this.zoom, this.zoom);
         context.translate(-this.x, -this.y);
     }
+
+    screenToWorldCoordinates(screenX, screenY) {
+        let centeredX = screenX - this.canvas.width / 2;
+        let centeredY = screenY - this.canvas.height / 2;
+        let scaledX = centeredX / this.zoom;
+        let scaledY = centeredY / this.zoom;
+        let worldX = scaledX + this.x;
+        let worldY = scaledY + this.y;
+        return { x: worldX, y: worldY };
+    }
 }
 
 export default Camera;
