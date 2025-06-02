@@ -39,7 +39,18 @@ class RenderSystem {
                     context.closePath();
                 } else if (shape === 'rectangle') {
                     const { width, height } = appearance;
-                    context.fillRect(x, y, width, height);
+                    // Assuming x, y from transform is top-left for rectangles as per typical canvas rect drawing
+                    // If x,y is center, this would be: context.fillRect(x - width / 2, y - height / 2, width, height);
+                    // Based on current Dot entity (spriteSize) and Collider (width/height), position is likely center.
+                    // Let's adjust rectangle rendering to assume x,y is center for consistency.
+                    const rectX = x - width / 2;
+                    const rectY = y - height / 2;
+                    context.fillRect(rectX, rectY, width, height);
+                } else if (shape === 'sprite') {
+                    const { spriteSize } = appearance; // spriteSize = { width, height }
+                    const drawX = x - spriteSize.width / 2;
+                    const drawY = y - spriteSize.height / 2;
+                    context.fillRect(drawX, drawY, spriteSize.width, spriteSize.height);
                 }
                 // Other shapes if any...
             }

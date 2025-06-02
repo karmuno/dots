@@ -8,6 +8,8 @@ class Appearance {
         } else if (this.shape === 'rectangle') {
             this.width = config.width || 20; // Default width for rectangle
             this.height = config.height || 20; // Default height for rectangle
+        } else if (this.shape === 'sprite') {
+            this.spriteSize = config.spriteSize || { width: 3, height: 3 }; // Default sprite size
         } else {
             // Default to circle if shape is not specified or invalid
             // and radius is provided, otherwise it's a shapeless object
