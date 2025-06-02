@@ -19,14 +19,12 @@ class GameLoop {
         
         if (this.world && typeof this.world.update === 'function') {
             this.world.update(deltaTime);
-            console.log("GameLoop: world.update called with deltaTime:", deltaTime);
         } else {
             console.error("GameLoop: world or world.update is not available or not a function.");
         }
 
         if (this.renderer && typeof this.renderer.render === 'function') {
             this.renderer.render(this.world);
-            console.log("GameLoop: renderer.render called");
         } else {
             console.error("GameLoop: renderer or renderer.render is not available or not a function.");
         }

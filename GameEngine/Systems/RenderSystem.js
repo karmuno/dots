@@ -13,13 +13,23 @@ class RenderSystem {
         camera.applyTransform(context); // Apply camera's pan and zoom
 
         // --- Rendering loop starts ---
-        for (const entity of Object.values(world.entities)) {
+        // Sort entities by draw layer (entities without DrawLayer component get layer -1)
+        const sortedEntities = Object.values(world.entities).sort((a, b) => {
+            const layerA = a.components.DrawLayer ? a.components.DrawLayer.layer : -1;
+            const layerB = b.components.DrawLayer ? b.components.DrawLayer.layer : -1;
+            return layerA - layerB; // Lower layers first, higher layers on top
+        });
+
+        console.log("Rendering entities:", sortedEntities.length);
+        for (const entity of sortedEntities) {
             const appearance = entity.components.Appearance;
             const transform = entity.components.Transform;
 
+            console.log("Entity ID:", entity.id, "Has appearance:", !!appearance, "Has transform:", !!transform);
             if (appearance && transform) {
                 const { x, y } = transform.position; // These are world coordinates
                 const { color, shape } = appearance;
+                console.log("Rendering entity at:", x, y, "color:", color, "shape:", shape);
 
                 context.fillStyle = color;
 

@@ -4,6 +4,7 @@ class ColliderComponent extends Component {
   constructor(config = {}) {
     super();
     this.type = config.type;
+    console.log('ColliderComponent config:', config);
 
     if (this.type === 'rectangle') {
       this.width = config.width || 1;
@@ -12,7 +13,6 @@ class ColliderComponent extends Component {
       this.radius = config.radius || 1;
     } else {
       // Default to a small rectangle if type is not specified or invalid
-      // Or, consider throwing an error or logging a warning.
       this.type = 'rectangle';
       this.width = config.width || 1;
       this.height = config.height || 1;

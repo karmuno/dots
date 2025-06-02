@@ -3,6 +3,7 @@ import Transform from '../Components/Transform.js';
 import Movement from '../Components/Movement.js';
 import Appearance from '../Components/Appearance.js';
 import ColliderComponent from '../Components/ColliderComponent.js';
+import DrawLayer from '../Components/DrawLayer.js';
 
 /**
  * @class Dot
@@ -42,5 +43,8 @@ export default class Dot extends Entity {
       width: 3,
       height: 3,
     }));
+
+    // Add DrawLayer Component (layer 1 - on top of boundary)
+    this.addComponent(new DrawLayer(1));
   }
 }

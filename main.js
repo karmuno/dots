@@ -2,7 +2,9 @@
 import GameLoop from './GameEngine/Core/GameLoop.js';
 import World from './GameEngine/Core/World.js';
 import RenderSystem from './GameEngine/Systems/RenderSystem.js';
+import MovementSystem from './GameEngine/Systems/MovementSystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
+import Dot from './GameEngine/Entities/Dot.js';
 
 // Initial console log to confirm script start
 console.log("main.js loaded.");
@@ -71,13 +73,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const renderSystem = new RenderSystem(worldView);
         console.log("RenderSystem instantiated:", renderSystem);
         
-        // Add render system to the world's systems
-        // Assuming World has an addSystem method
+        // Instantiate the movement system
+        const movementSystem = new MovementSystem();
+        console.log("MovementSystem instantiated:", movementSystem);
+        
+        // Add systems to the world
         if (typeof world.addSystem === 'function') {
             world.addSystem(renderSystem);
-            console.log("RenderSystem added to world.");
+            world.addSystem(movementSystem);
+            console.log("RenderSystem and MovementSystem added to world.");
         } else {
-            console.error("World.addSystem is not a function. RenderSystem not added.");
+            console.error("World.addSystem is not a function. Systems not added.");
+        }
+
+        // Create a randomly colored dot with random movement
+        const randomVelocityX = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
+        const randomVelocityY = (Math.random() - 0.5) * 50; // Random velocity between -25 and 25
+        const dot = new Dot('dot1', 0, 0, randomVelocityX, randomVelocityY); // Start at center
+        
+        // Add the dot to the world
+        if (typeof world.addEntity === 'function') {
+            world.addEntity(dot);
+            console.log("Random dot added to world:", dot);
+            console.log("Dot components:", dot.components);
+            console.log("Dot component names:", Object.keys(dot.components));
+            console.log("World entities after adding dot:", Object.keys(world.entities));
+            console.log("Dot transform:", dot.components.Transform);
+            console.log("Dot appearance:", dot.components.Appearance);
+        } else {
+            console.error("World.addEntity is not a function. Dot not added.");
         }
 
         // Instantiate the game loop with the world and renderer
