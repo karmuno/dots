@@ -7,7 +7,7 @@ class RenderSystem {
         const context = this.worldView.getContext();
         this.worldView.clear();
 
-        for (const entity of world.entities) {
+        for (const entity of Object.values(world.entities)) {
             const appearance = entity.components.Appearance;
             const transform = entity.components.Transform;
 

@@ -19,3 +19,5 @@ class WorldView {
         return this.canvas;
     }
 }
+
+export default WorldView;
