@@ -175,9 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstDot = dots[0];
             const initialColor = firstDot.components.Appearance.color;
             const r = parseInt(initialColor.slice(1, 3), 16);
-        const g = parseInt(initialColor.slice(3, 5), 16);
-        const b = parseInt(initialColor.slice(5, 7), 16);
-        colorPicker.setColor(r, g, b, true); // Silent initialization
+            const g = parseInt(initialColor.slice(3, 5), 16);
+            const b = parseInt(initialColor.slice(5, 7), 16);
+            colorPicker.setColor(r, g, b, true); // Silent initialization
+        }
         
         // Initialize dot sheet to show the first dot
         // dotSheet.displayEntityInfo(firstDot); // UISystem might select one, or leave it unselected.
