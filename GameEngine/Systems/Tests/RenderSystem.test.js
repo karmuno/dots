@@ -55,10 +55,11 @@ class MockCanvasRenderingContext2D {
             beginPath: 0,
             arc: 0,
             fill: 0,
-            fillRect: 0, // Example, if we were testing rect rendering
-            stroke: 0,   // Example
+            fillRect: 0,
+            stroke: 0,
             fillStyle: '',
             arcParams: [],
+            fillRectParams: [], // Added for rectangle testing
         };
     }
 
@@ -68,7 +69,10 @@ class MockCanvasRenderingContext2D {
         this.spies.arcParams.push({x, y, radius, startAngle, endAngle});
     }
     fill() { this.spies.fill++; }
-    fillRect(x, y, width, height) { this.spies.fillRect++; } // For future shapes
+    fillRect(x, y, width, height) { 
+        this.spies.fillRect++; 
+        this.spies.fillRectParams.push({x, y, width, height}); // Store params
+    }
     stroke() { this.spies.stroke++; }
     
     // To reset for each test if needed, or create new Mock context
@@ -80,6 +84,7 @@ class MockCanvasRenderingContext2D {
         this.spies.stroke = 0;
         this.spies.fillStyle = '';
         this.spies.arcParams = [];
+        this.spies.fillRectParams = []; // Reset here
     }
 }
 
@@ -185,6 +190,64 @@ try {
     // If it tried to draw others, counts would be higher or errors would occur.
     // No specific assertion here other than relying on Test 4's strictness.
     console.log("Test 5 Passed (implicitly by Test 4).");
+
+    // --- Test 6: render(world) correctly draws rectangle entities ---
+    console.log("Test 6: render(world) correctly draws rectangle entities");
+    MockWorldView.resetSpies(); // Reset calls to WorldView methods
+    mockViewInstance.context.resetSpies(); // Reset drawing command spies
+
+    const rectEntity = {
+        id: 6,
+        components: {
+            Appearance: { shape: 'rectangle', color: 'blue', width: 30, height: 40 },
+            Transform: { position: { x: 10, y: 20 } }
+        }
+    };
+    const worldForRect = { entities: [rectEntity] };
+
+    renderSys.render(worldForRect);
+
+    assert(mockViewInstance.context.spies.fillRect === 1, `Test 6 Failed: fillRect called ${mockViewInstance.context.spies.fillRect} times, expected 1.`);
+    assert(mockViewInstance.context.fillStyle === 'blue', `Test 6 Failed: fillStyle for rectangle not set to 'blue'. Was: ${mockViewInstance.context.fillStyle}`);
+    
+    const firstRectParams = mockViewInstance.context.spies.fillRectParams[0];
+    assert(firstRectParams.x === 10, "Test 6 Failed: fillRect x param for rectEntity is incorrect.");
+    assert(firstRectParams.y === 20, "Test 6 Failed: fillRect y param for rectEntity is incorrect.");
+    assert(firstRectParams.width === 30, "Test 6 Failed: fillRect width param for rectEntity is incorrect.");
+    assert(firstRectParams.height === 40, "Test 6 Failed: fillRect height param for rectEntity is incorrect.");
+    console.log("Test 6 Passed.");
+
+    // --- Test 7: Ensure circle rendering is not broken after rectangle addition ---
+    // This test will re-use the setup from Test 4 but with a fresh render call
+    // to ensure no cross-contamination if spies were not reset properly.
+    console.log("Test 7: render(world) still correctly draws circle entities after changes");
+    MockWorldView.resetSpies();
+    mockViewInstance.context.resetSpies();
+
+    // Re-use entities from original Test 4 setup for circles
+    const worldForCircles = { entities: [entity1, entity5] }; // Only valid circle entities
+    renderSys.render(worldForCircles);
+
+    assert(mockViewInstance.context.spies.beginPath === 2, `Test 7 Failed: beginPath called ${mockViewInstance.context.spies.beginPath} times, expected 2 for circles.`);
+    assert(mockViewInstance.context.spies.arc === 2, `Test 7 Failed: arc called ${mockViewInstance.context.spies.arc} times, expected 2 for circles.`);
+    assert(mockViewInstance.context.spies.fill === 2, `Test 7 Failed: fill called ${mockViewInstance.context.spies.fill} times, expected 2 for circles.`);
+    
+    // Check fillStyle for the last circle (entity5 - purple)
+    // The render loop sets fillStyle before drawing each shape.
+    // So, after rendering entity1 (red) then entity5 (purple), fillStyle should be 'purple'.
+    assert(mockViewInstance.context.fillStyle === 'purple', `Test 7 Failed: fillStyle not set correctly for the last drawn circle (entity5). Expected 'purple', got '${mockViewInstance.context.fillStyle}'`);
+    
+    const firstCircleParamsInTest7 = mockViewInstance.context.spies.arcParams[0];
+    assert(firstCircleParamsInTest7.x === entity1.components.Transform.position.x, "Test 7 Failed: arc x param for entity1 is incorrect.");
+    assert(firstCircleParamsInTest7.y === entity1.components.Transform.position.y, "Test 7 Failed: arc y param for entity1 is incorrect.");
+    assert(firstCircleParamsInTest7.radius === entity1.components.Appearance.radius, "Test 7 Failed: arc radius param for entity1 is incorrect.");
+
+    const secondCircleParamsInTest7 = mockViewInstance.context.spies.arcParams[1];
+    assert(secondCircleParamsInTest7.x === entity5.components.Transform.position.x, "Test 7 Failed: arc x param for entity5 is incorrect.");
+    assert(secondCircleParamsInTest7.y === entity5.components.Transform.position.y, "Test 7 Failed: arc y param for entity5 is incorrect.");
+    assert(secondCircleParamsInTest7.radius === entity5.components.Appearance.radius, "Test 7 Failed: arc radius param for entity5 is incorrect.");
+    console.log("Test 7 Passed.");
+
 
     console.log("All RenderSystem tests passed!");
 

@@ -5,23 +5,40 @@ class RenderSystem {
 
     render(world) {
         const context = this.worldView.getContext();
-        this.worldView.clear();
+        const camera = this.worldView.getCamera(); // Get the camera
 
+        this.worldView.clear(); // Clear happens in screen space, before camera transform
+
+        context.save(); // Save the current state (like transformations, fillStyle, etc.)
+        camera.applyTransform(context); // Apply camera's pan and zoom
+
+        // --- Rendering loop starts ---
         for (const entity of Object.values(world.entities)) {
             const appearance = entity.components.Appearance;
             const transform = entity.components.Transform;
 
-            if (appearance && transform && appearance.shape === 'circle') {
-                const { x, y } = transform.position;
-                const { color, radius } = appearance;
+            if (appearance && transform) {
+                const { x, y } = transform.position; // These are world coordinates
+                const { color, shape } = appearance;
 
-                context.beginPath();
-                context.arc(x, y, radius, 0, Math.PI * 2);
                 context.fillStyle = color;
-                context.fill();
-                context.closePath();
+
+                if (shape === 'circle') {
+                    const { radius } = appearance;
+                    context.beginPath();
+                    context.arc(x, y, radius, 0, Math.PI * 2);
+                    context.fill();
+                    context.closePath();
+                } else if (shape === 'rectangle') {
+                    const { width, height } = appearance;
+                    context.fillRect(x, y, width, height);
+                }
+                // Other shapes if any...
             }
         }
+        // --- Rendering loop ends ---
+
+        context.restore(); // Restore to the state before camera transform
     }
 }
 

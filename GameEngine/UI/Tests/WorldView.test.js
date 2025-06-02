@@ -25,10 +25,15 @@ const mockContext = {
         mockContext.clearRectCalledWith = { x, y, width, height };
     },
     clearRectCalledWith: null,
+    // Properties for image smoothing tests
+    imageSmoothingEnabled: undefined,
+    mozImageSmoothingEnabled: undefined,
+    webkitImageSmoothingEnabled: undefined,
+    msImageSmoothingEnabled: undefined,
     // Add other context methods if WorldView directly calls them beyond getContext and clearRect via clear()
 };
 
-const originalDocument = global.document;
+const originalDocument = global.document; // Store original document if it exists
 global.document = {
     createElement: function(tagName) {
         if (tagName === 'canvas') {
@@ -101,6 +106,33 @@ try {
     assert(mockContext.clearRectCalledWith.width === 100, "Test 6 Failed: clearRect width !== 100.");
     assert(mockContext.clearRectCalledWith.height === 50, "Test 6 Failed: clearRect height !== 50.");
     console.log("Test 6 Passed.");
+
+    // --- Tests for setImageSmoothing ---
+    // Reset context properties for these specific tests
+    function resetSmoothingProperties(defaultValue) {
+        mockContext.imageSmoothingEnabled = defaultValue;
+        mockContext.mozImageSmoothingEnabled = defaultValue;
+        mockContext.webkitImageSmoothingEnabled = defaultValue;
+        mockContext.msImageSmoothingEnabled = defaultValue;
+    }
+
+    console.log("Test 7: setImageSmoothing(true) sets context properties to true");
+    resetSmoothingProperties(false); // Start from a known different state
+    view.setImageSmoothing(true); // view is still the one from previous tests (100x50)
+    assert(mockContext.imageSmoothingEnabled === true, "Test 7 Failed: imageSmoothingEnabled not true.");
+    assert(mockContext.mozImageSmoothingEnabled === true, "Test 7 Failed: mozImageSmoothingEnabled not true.");
+    assert(mockContext.webkitImageSmoothingEnabled === true, "Test 7 Failed: webkitImageSmoothingEnabled not true.");
+    assert(mockContext.msImageSmoothingEnabled === true, "Test 7 Failed: msImageSmoothingEnabled not true.");
+    console.log("Test 7 Passed.");
+
+    console.log("Test 8: setImageSmoothing(false) sets context properties to false");
+    resetSmoothingProperties(true); // Start from a known different state
+    view.setImageSmoothing(false);
+    assert(mockContext.imageSmoothingEnabled === false, "Test 8 Failed: imageSmoothingEnabled not false.");
+    assert(mockContext.mozImageSmoothingEnabled === false, "Test 8 Failed: mozImageSmoothingEnabled not false.");
+    assert(mockContext.webkitImageSmoothingEnabled === false, "Test 8 Failed: webkitImageSmoothingEnabled not false.");
+    assert(mockContext.msImageSmoothingEnabled === false, "Test 8 Failed: msImageSmoothingEnabled not false.");
+    console.log("Test 8 Passed.");
 
     console.log("All WorldView tests passed!");
 

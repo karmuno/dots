@@ -20,6 +20,53 @@ document.addEventListener('DOMContentLoaded', () => {
         const worldView = new WorldView(800, 600);
         console.log("WorldView instantiated:", worldView);
 
+        // Add Camera Controls
+        worldView.getCanvas().addEventListener('wheel', function(event) {
+            event.preventDefault();
+            const zoomFactor = event.deltaY < 0 ? 1.1 : 0.9; // Zoom in or out
+            // Get mouse position relative to the canvas
+            const rect = worldView.getCanvas().getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            worldView.zoomCamera(zoomFactor, mouseX, mouseY);
+        }, { passive: false });
+
+        let isPanning = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        worldView.getCanvas().addEventListener('mousedown', function(event) {
+            if (event.button === 0) { // Left mouse button
+                isPanning = true;
+                lastMouseX = event.clientX;
+                lastMouseY = event.clientY;
+            }
+        });
+
+        worldView.getCanvas().addEventListener('mousemove', function(event) {
+            if (isPanning) {
+                const dx = event.clientX - lastMouseX;
+                const dy = event.clientY - lastMouseY;
+                worldView.panCamera(-dx, -dy); // Pan in the opposite direction of mouse movement
+                lastMouseX = event.clientX;
+                lastMouseY = event.clientY;
+            }
+        });
+
+        worldView.getCanvas().addEventListener('mouseup', function(event) {
+            if (event.button === 0) {
+                isPanning = false;
+            }
+        });
+
+        worldView.getCanvas().addEventListener('mouseleave', function() {
+            isPanning = false; // Stop panning if mouse leaves canvas
+        });
+
+        worldView.getCanvas().addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+
         // Instantiate the render system
         const renderSystem = new RenderSystem(worldView);
         console.log("RenderSystem instantiated:", renderSystem);
