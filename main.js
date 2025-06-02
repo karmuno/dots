@@ -2,6 +2,7 @@
 import GameLoop from './GameEngine/Core/GameLoop.js';
 import World from './GameEngine/Core/World.js';
 import RenderSystem from './GameEngine/Systems/RenderSystem.js';
+import WorldView from './GameEngine/UI/WorldView.js';
 
 // Initial console log to confirm script start
 console.log("main.js loaded.");
@@ -15,8 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const world = new World();
         console.log("World instantiated:", world);
 
+        // Create WorldView instance
+        const worldView = new WorldView(800, 600);
+        console.log("WorldView instantiated:", worldView);
+
         // Instantiate the render system
-        const renderSystem = new RenderSystem();
+        const renderSystem = new RenderSystem(worldView);
         console.log("RenderSystem instantiated:", renderSystem);
         
         // Add render system to the world's systems
@@ -27,11 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.error("World.addSystem is not a function. RenderSystem not added.");
         }
-
-        // Get the canvas element for the renderer (optional for now, but good for future)
-        const canvas = document.getElementById('gameCanvas');
-        // Pass canvas to RenderSystem if it's designed to use one
-        // renderSystem.setCanvas(canvas); // Example
 
         // Instantiate the game loop with the world and renderer
         // The GameLoop constructor expects 'world' and 'renderer' (which is our renderSystem)
