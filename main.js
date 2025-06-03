@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("World instantiated:", world);
 
         // Create WorldView instance
-        const worldView = new WorldView(world, 800, 600); // Pass world instance
+        const worldView = new WorldView(world, 250, 250); // Pass world instance
         console.log("WorldView instantiated:", worldView);
 
         const dotSheet = new DotSheet('dotInfoPanelContainer');
