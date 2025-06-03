@@ -98,8 +98,15 @@ class World {
 
     // Generate random properties for the dit
     const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-    const x = (Math.random() - 0.5) * 400; // Or use world width/height if available
-    const y = (Math.random() - 0.5) * 400; // Or use world width/height if available
+    
+    // Get initial boundary radius (default 100 from BoundaryEntity constructor)
+    const initialRadius = this.boundary ? this.boundary.components.RadiusComponent.radius : 100;
+    
+    // Generate random position within the initial boundary radius with some margin
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = Math.random() * (initialRadius - 10); // 10 pixel margin from boundary
+    const x = Math.cos(angle) * distance;
+    const y = Math.sin(angle) * distance;
 
     // Instantiate a new Dit
     const dit = new Dit(id, x, y, randomColor);
