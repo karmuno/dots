@@ -2,12 +2,14 @@ import Entity from './Entity.js'; // Assuming Entity.js is in the same directory
 import BoundaryEntity from '../Entities/BoundaryEntity.js';
 import GrowthSystem from '../Systems/GrowthSystem.js';
 import Dot from '../Entities/Dot.js';
+import Dit from '../Entities/Dit.js';
 
 class World {
   constructor() {
     this.entities = {};
     this.systems = [];
     this.dotCounter = 0; // Initialize dotCounter
+    this.ditCounter = 0; // Initialize ditCounter
 
     // Create and store the boundary entity
     const boundary = new BoundaryEntity(); // BoundaryEntity itself is a subclass of Entity
@@ -88,6 +90,26 @@ class World {
     console.log(`World: Created new dot - ID: ${id}, X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}, VelX: ${velocityX.toFixed(2)}, VelY: ${velocityY.toFixed(2)}`);
 
     return dot;
+  }
+
+  createDit() {
+    this.ditCounter++;
+    const id = `dit${this.ditCounter}`;
+
+    // Generate random properties for the dit
+    const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+    const x = (Math.random() - 0.5) * 400; // Or use world width/height if available
+    const y = (Math.random() - 0.5) * 400; // Or use world width/height if available
+
+    // Instantiate a new Dit
+    const dit = new Dit(id, x, y, randomColor);
+
+    // Add the newly created dit to the world's entities
+    this.addEntity(dit);
+
+    console.log(`World: Created new dit - ID: ${id}, X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}, Color: ${randomColor}`);
+
+    return dit;
   }
 
   deleteDot(entityId) {
