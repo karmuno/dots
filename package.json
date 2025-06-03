@@ -4,6 +4,12 @@
   "description": "A sandbox for systems architects—watching simple rules evolve into complex behaviors",
   "type": "module",
   "scripts": {
-    "test": "node GameEngine/Core/Tests/Entity.test.js"
+    "test": "node run-all-tests.js"
+  },
+  "dependencies": {
+    "glob": "^11.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

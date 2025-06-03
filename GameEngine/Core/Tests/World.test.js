@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 // GameEngine/Core/Tests/World.test.js
 import World from '../World.js';
 import Entity from '../Entity.js';

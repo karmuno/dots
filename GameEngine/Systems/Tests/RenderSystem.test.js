@@ -1,258 +1,183 @@
-// GameEngine/Systems/Tests/RenderSystem.test.js
+import RenderSystem from '../RenderSystem.js';
+import { jest } from '@jest/globals';
 
-// Simple assertion function for testing
-function assert(condition, message) {
-    if (!condition) {
-        throw new Error(message || "Assertion failed");
-    }
-}
+// Mock WorldView class using Jest's mocking features
+const mockWorldViewClear = jest.fn();
+const mockWorldViewGetContext = jest.fn();
+const mockWorldViewGetCanvas = jest.fn();
 
-// --- Mocks ---
+// Mock CanvasRenderingContext2D methods
+const mockContextBeginPath = jest.fn();
+const mockContextArc = jest.fn();
+const mockContextFill = jest.fn();
+const mockContextFillRect = jest.fn();
+const mockContextStroke = jest.fn();
+let mockContextFillStyle = ''; // Allow direct assignment for fillStyle
 
-// Mock WorldView class
-class MockWorldView {
-    constructor(width, height) {
-        this.width = width;
-        this.height = height;
-        this.canvas = { width: this.width, height: this.height }; // Simplified canvas
-        this.context = new MockCanvasRenderingContext2D();
-        
-        // Spy for constructor
-        MockWorldView.constructorCalledWith = { width, height };
-    }
-
-    getContext() {
-        MockWorldView.getContextCalled = true;
-        return this.context;
-    }
-
-    clear() {
-        MockWorldView.clearCalled = true;
-        this.context.clearRect(0, 0, this.width, this.height); // Simulate clear
-    }
-
-    getCanvas() {
-        return this.canvas;
-    }
-
-    // Static properties for spying
-    static constructorCalledWith = null;
-    static getContextCalled = false;
-    static clearCalled = false;
-
-    static resetSpies() {
-        MockWorldView.constructorCalledWith = null;
-        MockWorldView.getContextCalled = false;
-        MockWorldView.clearCalled = false;
-        // Note: Context spies are reset on the instance or by creating a new one.
-    }
-}
-
-// Mock CanvasRenderingContext2D
-class MockCanvasRenderingContext2D {
-    constructor() {
-        this.spies = {
-            beginPath: 0,
-            arc: 0,
-            fill: 0,
-            fillRect: 0,
-            stroke: 0,
-            fillStyle: '',
-            arcParams: [],
-            fillRectParams: [], // Added for rectangle testing
-        };
-    }
-
-    beginPath() { this.spies.beginPath++; }
-    arc(x, y, radius, startAngle, endAngle) { 
-        this.spies.arc++; 
-        this.spies.arcParams.push({x, y, radius, startAngle, endAngle});
-    }
-    fill() { this.spies.fill++; }
-    fillRect(x, y, width, height) { 
-        this.spies.fillRect++; 
-        this.spies.fillRectParams.push({x, y, width, height}); // Store params
-    }
-    stroke() { this.spies.stroke++; }
-    
-    // To reset for each test if needed, or create new Mock context
-    resetSpies() {
-        this.spies.beginPath = 0;
-        this.spies.arc = 0;
-        this.spies.fill = 0;
-        this.spies.fillRect = 0;
-        this.spies.stroke = 0;
-        this.spies.fillStyle = '';
-        this.spies.arcParams = [];
-        this.spies.fillRectParams = []; // Reset here
-    }
-}
-
-// Placeholder for RenderSystem class - in a real setup, this would be imported.
-// class RenderSystem { constructor(worldView) { /* ... */ } render(world) { /* ... */ } }
-// Placeholder for World class and component structure
-// class World { constructor() { this.entities = []; } addEntity(entity) { this.entities.push(entity); } }
-// const entity = { components: { Appearance: {}, Transform: {} } };
-
-
-console.log("--- Running RenderSystem.test.js ---");
-
-try {
-    // --- Test Suite for RenderSystem ---
-
-    // Test 1: Constructor stores the worldView instance
-    console.log("Test 1: Constructor stores worldView");
-    MockWorldView.resetSpies();
-    const mockViewInstance = new MockWorldView(800, 600);
-    const renderSys = new RenderSystem(mockViewInstance); // RenderSystem should be loaded/defined
-    assert(renderSys.worldView === mockViewInstance, "Test 1 Failed: worldView instance not stored.");
-    console.log("Test 1 Passed.");
-
-    // --- render(world) tests ---
-    // Setup for render tests
-    const world = { entities: [] }; // Simple mock world
-    const entity1 = {
-        id: 1,
-        components: {
-            Appearance: { shape: 'circle', color: 'red', radius: 10 },
-            Transform: { position: { x: 50, y: 50 } }
-        }
+const MockWorldView = jest.fn().mockImplementation((width, height) => {
+    const mockContextInstance = {
+        beginPath: mockContextBeginPath,
+        arc: mockContextArc,
+        fill: mockContextFill,
+        fillRect: mockContextFillRect,
+        stroke: mockContextStroke,
+        save: jest.fn(), // Add mock for save
+        restore: jest.fn(), // Add mock for restore
+        closePath: jest.fn(), // Add mock for closePath
+        // Directly use the module-level variable for fillStyle to track changes
+        get fillStyle() { return mockContextFillStyle; },
+        set fillStyle(value) { mockContextFillStyle = value; },
     };
-    const entity2 = { // No appearance
-        id: 2,
-        components: {
-            Transform: { position: { x: 100, y: 100 } }
-        }
+    mockWorldViewGetContext.mockReturnValue(mockContextInstance); // getContext returns this mock context
+
+    return {
+        width: width,
+        height: height,
+        canvas: { width: width, height: height }, // Simplified canvas
+        clear: mockWorldViewClear,
+        getContext: mockWorldViewGetContext,
+        getCanvas: mockWorldViewGetCanvas, // If RenderSystem uses it
+        getCamera: jest.fn().mockReturnValue({ // Mock getCamera and its return value if needed
+            applyTransform: jest.fn(), // Add mock for applyTransform
+            // Add other properties/methods of the camera object if RenderSystem uses them
+            // For example, if it uses camera.getTransform(), camera.getPosition(), etc.
+            // position: { x: 0, y: 0 },
+            // zoom: 1,
+            // getTransform: jest.fn().mockReturnValue({ /* mock transform object */ }),
+        }),
+        world: { selectedEntity: null }, // Add mock world object with selectedEntity
     };
-    const entity3 = { // No transform
-        id: 3,
-        components: {
-            Appearance: { shape: 'circle', color: 'blue', radius: 5 }
-        }
-    };
-    const entity4 = { // Wrong shape
-        id: 4,
-        components: {
-            Appearance: { shape: 'square', color: 'green', size: 10 },
-            Transform: { position: { x: 150, y: 150 } }
-        }
-    };
-     const entity5 = { // Circle, to be rendered
-        id: 5,
-        components: {
-            Appearance: { shape: 'circle', color: 'purple', radius: 15 },
-            Transform: { position: { x: 200, y: 200 } }
-        }
-    };
-
-    world.entities = [entity1, entity2, entity3, entity4, entity5];
-    
-    // Reset spies before each render test block if needed, or manage context spy manually
-    mockViewInstance.context.resetSpies(); // Reset drawing command spies
-    MockWorldView.resetSpies(); // Reset WorldView method call spies
+});
 
 
-    console.log("Test 2: render(world) calls worldView.clear()");
-    renderSys.render(world);
-    assert(MockWorldView.clearCalled, "Test 2 Failed: worldView.clear() was not called.");
-    console.log("Test 2 Passed.");
+describe('RenderSystem', () => {
+    let renderSys;
+    let mockViewInstance;
 
-    console.log("Test 3: render(world) calls worldView.getContext()");
-    // Reset for this specific check, though clear() would also call it if it's part of clear's impl.
-    // RenderSystem directly calls getContext(), so this is a valid test.
-    MockWorldView.resetSpies(); // Resetting spies to isolate the getContext call for this test
-    mockViewInstance.context.resetSpies();
-    renderSys.render(world); // render will call clear, which might call getContext. Let's focus on render's direct call.
-                            // The current RenderSystem calls getContext once at the start of render.
-    assert(MockWorldView.getContextCalled, "Test 3 Failed: worldView.getContext() was not called by render method itself.");
-    console.log("Test 3 Passed.");
+    beforeEach(() => {
+        // Clear all mock implementations and calls before each test
+        MockWorldView.mockClear();
+        mockWorldViewClear.mockClear();
+        mockWorldViewGetContext.mockClear();
+        mockWorldViewGetCanvas.mockClear();
 
+        mockContextBeginPath.mockClear();
+        mockContextArc.mockClear();
+        mockContextFill.mockClear();
+        mockContextFillRect.mockClear();
+        mockContextStroke.mockClear();
+        mockContextFillStyle = ''; // Reset fillStyle
 
-    console.log("Test 4: render(world) correctly draws circle entities");
-    // Spies were reset before the render call in Test 2/3 setup phase.
-    // renderSys.render(world); // Already called in previous tests, context spies accumulate
-    
-    assert(mockViewInstance.context.spies.beginPath === 2, `Test 4 Failed: beginPath called ${mockViewInstance.context.spies.beginPath} times, expected 2.`);
-    assert(mockViewInstance.context.spies.arc === 2, `Test 4 Failed: arc called ${mockViewInstance.context.spies.arc} times, expected 2.`);
-    assert(mockViewInstance.context.spies.fill === 2, `Test 4 Failed: fill called ${mockViewInstance.context.spies.fill} times, expected 2.`);
-    
-    // Check parameters for the first circle (entity1)
-    const firstArcParams = mockViewInstance.context.spies.arcParams[0];
-    assert(firstArcParams.x === 50, "Test 4 Failed: arc x param for entity1 is incorrect.");
-    assert(firstArcParams.y === 50, "Test 4 Failed: arc y param for entity1 is incorrect.");
-    assert(firstArcParams.radius === 10, "Test 4 Failed: arc radius param for entity1 is incorrect.");
-    assert(mockViewInstance.context.fillStyle === 'purple', "Test 4 Failed: fillStyle not set correctly for the last drawn entity (entity5)."); // fillStyle is stateful
-    console.log("Test 4 Passed.");
+        // Create instances for each test
+        mockViewInstance = new MockWorldView(800, 600);
+        renderSys = new RenderSystem(mockViewInstance);
+    });
 
+    test('constructor stores the worldView instance', () => {
+        expect(MockWorldView).toHaveBeenCalledWith(800, 600);
+        expect(renderSys.worldView).toBe(mockViewInstance);
+    });
 
-    console.log("Test 5: render(world) skips entities missing components or with non-circle shapes");
-    // This is implicitly tested by Test 4's exact call counts (2 draw calls for 2 valid circle entities out of 5 total).
-    // If it tried to draw others, counts would be higher or errors would occur.
-    // No specific assertion here other than relying on Test 4's strictness.
-    console.log("Test 5 Passed (implicitly by Test 4).");
+    describe('render(world)', () => {
+        let world;
+        let entity1, entity2, entity3, entity4, entity5, rectEntity;
 
-    // --- Test 6: render(world) correctly draws rectangle entities ---
-    console.log("Test 6: render(world) correctly draws rectangle entities");
-    MockWorldView.resetSpies(); // Reset calls to WorldView methods
-    mockViewInstance.context.resetSpies(); // Reset drawing command spies
+        beforeEach(() => {
+            // Setup world and entities for render tests
+            world = { entities: [] };
+            entity1 = { // Valid circle
+                id: 1,
+                components: {
+                    Appearance: { shape: 'circle', color: 'red', radius: 10 },
+                    Transform: { position: { x: 50, y: 50 } }
+                }
+            };
+            entity2 = { // No appearance
+                id: 2,
+                components: { Transform: { position: { x: 100, y: 100 } } }
+            };
+            entity3 = { // No transform
+                id: 3,
+                components: { Appearance: { shape: 'circle', color: 'blue', radius: 5 } }
+            };
+            entity4 = { // Wrong shape (for circle-only tests)
+                id: 4,
+                components: {
+                    Appearance: { shape: 'square', color: 'green', size: 10 },
+                    Transform: { position: { x: 150, y: 150 } }
+                }
+            };
+            entity5 = { // Valid circle
+                id: 5,
+                components: {
+                    Appearance: { shape: 'circle', color: 'purple', radius: 15 },
+                    Transform: { position: { x: 200, y: 200 } }
+                }
+            };
+            rectEntity = { // Valid rectangle
+                id: 6,
+                components: {
+                    Appearance: { shape: 'rectangle', color: 'blue', width: 30, height: 40 },
+                    Transform: { position: { x: 10, y: 20 } }
+                }
+            };
+            world.entities = [entity1, entity2, entity3, entity4, entity5, rectEntity];
+        });
 
-    const rectEntity = {
-        id: 6,
-        components: {
-            Appearance: { shape: 'rectangle', color: 'blue', width: 30, height: 40 },
-            Transform: { position: { x: 10, y: 20 } }
-        }
-    };
-    const worldForRect = { entities: [rectEntity] };
+        test('calls worldView.clear()', () => {
+            renderSys.render(world);
+            expect(mockWorldViewClear).toHaveBeenCalledTimes(1);
+        });
 
-    renderSys.render(worldForRect);
+        test('calls worldView.getContext()', () => {
+            renderSys.render(world);
+            // RenderSystem calls getContext at the start of its render method.
+            expect(mockWorldViewGetContext).toHaveBeenCalledTimes(1);
+        });
 
-    assert(mockViewInstance.context.spies.fillRect === 1, `Test 6 Failed: fillRect called ${mockViewInstance.context.spies.fillRect} times, expected 1.`);
-    assert(mockViewInstance.context.fillStyle === 'blue', `Test 6 Failed: fillStyle for rectangle not set to 'blue'. Was: ${mockViewInstance.context.fillStyle}`);
-    
-    const firstRectParams = mockViewInstance.context.spies.fillRectParams[0];
-    assert(firstRectParams.x === 10, "Test 6 Failed: fillRect x param for rectEntity is incorrect.");
-    assert(firstRectParams.y === 20, "Test 6 Failed: fillRect y param for rectEntity is incorrect.");
-    assert(firstRectParams.width === 30, "Test 6 Failed: fillRect width param for rectEntity is incorrect.");
-    assert(firstRectParams.height === 40, "Test 6 Failed: fillRect height param for rectEntity is incorrect.");
-    console.log("Test 6 Passed.");
+        test('correctly draws circle entities', () => {
+            renderSys.render(world);
+            expect(mockContextBeginPath).toHaveBeenCalledTimes(2); // For entity1 and entity5
+            expect(mockContextArc).toHaveBeenCalledTimes(2);
+            expect(mockContextFill).toHaveBeenCalledTimes(2);
 
-    // --- Test 7: Ensure circle rendering is not broken after rectangle addition ---
-    // This test will re-use the setup from Test 4 but with a fresh render call
-    // to ensure no cross-contamination if spies were not reset properly.
-    console.log("Test 7: render(world) still correctly draws circle entities after changes");
-    MockWorldView.resetSpies();
-    mockViewInstance.context.resetSpies();
+            // Check parameters for the first circle (entity1)
+            expect(mockContextArc).toHaveBeenNthCalledWith(1, 50, 50, 10, 0, Math.PI * 2);
+            // Check parameters for the second circle (entity5)
+            expect(mockContextArc).toHaveBeenNthCalledWith(2, 200, 200, 15, 0, Math.PI * 2);
 
-    // Re-use entities from original Test 4 setup for circles
-    const worldForCircles = { entities: [entity1, entity5] }; // Only valid circle entities
-    renderSys.render(worldForCircles);
+            // Check that fillStyle was set correctly for the last drawn entity (entity5 - purple)
+            // The actual fillStyle of the mock context will be the one set for the last entity.
+            expect(mockContextFillStyle).toBe('purple');
+        });
 
-    assert(mockViewInstance.context.spies.beginPath === 2, `Test 7 Failed: beginPath called ${mockViewInstance.context.spies.beginPath} times, expected 2 for circles.`);
-    assert(mockViewInstance.context.spies.arc === 2, `Test 7 Failed: arc called ${mockViewInstance.context.spies.arc} times, expected 2 for circles.`);
-    assert(mockViewInstance.context.spies.fill === 2, `Test 7 Failed: fill called ${mockViewInstance.context.spies.fill} times, expected 2 for circles.`);
-    
-    // Check fillStyle for the last circle (entity5 - purple)
-    // The render loop sets fillStyle before drawing each shape.
-    // So, after rendering entity1 (red) then entity5 (purple), fillStyle should be 'purple'.
-    assert(mockViewInstance.context.fillStyle === 'purple', `Test 7 Failed: fillStyle not set correctly for the last drawn circle (entity5). Expected 'purple', got '${mockViewInstance.context.fillStyle}'`);
-    
-    const firstCircleParamsInTest7 = mockViewInstance.context.spies.arcParams[0];
-    assert(firstCircleParamsInTest7.x === entity1.components.Transform.position.x, "Test 7 Failed: arc x param for entity1 is incorrect.");
-    assert(firstCircleParamsInTest7.y === entity1.components.Transform.position.y, "Test 7 Failed: arc y param for entity1 is incorrect.");
-    assert(firstCircleParamsInTest7.radius === entity1.components.Appearance.radius, "Test 7 Failed: arc radius param for entity1 is incorrect.");
+        test('correctly draws rectangle entities', () => {
+            renderSys.render(world);
+            expect(mockContextFillRect).toHaveBeenCalledTimes(1); // For rectEntity
 
-    const secondCircleParamsInTest7 = mockViewInstance.context.spies.arcParams[1];
-    assert(secondCircleParamsInTest7.x === entity5.components.Transform.position.x, "Test 7 Failed: arc x param for entity5 is incorrect.");
-    assert(secondCircleParamsInTest7.y === entity5.components.Transform.position.y, "Test 7 Failed: arc y param for entity5 is incorrect.");
-    assert(secondCircleParamsInTest7.radius === entity5.components.Appearance.radius, "Test 7 Failed: arc radius param for entity5 is incorrect.");
-    console.log("Test 7 Passed.");
+            // Check parameters for the rectangle (rectEntity)
+            expect(mockContextFillRect).toHaveBeenCalledWith(10, 20, 30, 40);
 
+            // fillStyle should be 'blue' after drawing rectEntity if it was the last one with that style
+            // However, the loop continues, so fillStyle will be for the last *rendered* entity overall.
+            // To test rectEntity's fillStyle accurately, isolate it or check calls sequentially.
+            // For simplicity, if only rectEntity was rendered:
+            const worldWithOnlyRect = { entities: [rectEntity] };
+            mockContextFillRect.mockClear(); // Clear previous calls
+            mockContextFillStyle = ''; // Reset fillStyle
+            renderSys.render(worldWithOnlyRect);
+            expect(mockContextFillRect).toHaveBeenCalledTimes(1);
+            expect(mockContextFillRect).toHaveBeenCalledWith(10, 20, 30, 40);
+            expect(mockContextFillStyle).toBe('blue');
+        });
 
-    console.log("All RenderSystem tests passed!");
-
-} catch (e) {
-    console.error("RenderSystem test failed:", e.message);
-    console.error(e.stack);
-}
-// End of RenderSystem.test.js
+        test('skips entities missing Appearance or Transform components, or with unknown shapes', () => {
+            renderSys.render(world);
+            // Total drawable entities: entity1 (circle), entity5 (circle), rectEntity (rectangle)
+            expect(mockContextArc).toHaveBeenCalledTimes(2); // Circles
+            expect(mockContextFillRect).toHaveBeenCalledTimes(1); // Rectangles
+            // Total fill calls = 2 (circles) + 1 (rectangle) = 3
+            expect(mockContextFill).toHaveBeenCalledTimes(3);
+        });
+    });
+});

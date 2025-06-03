@@ -1,147 +1,139 @@
-// GameEngine/UI/Tests/WorldView.test.js
-
-// Simple assertion function for testing
-function assert(condition, message) {
-    if (!condition) {
-        throw new Error(message || "Assertion failed");
-    }
-}
+import WorldView from '../WorldView.js';
+import { jest } from '@jest/globals';
 
 // Mocking document.createElement and document.body.appendChild for non-browser environment
 const mockCanvas = {
     width: 0,
     height: 0,
-    getContext: function(contextType) {
+    getContext: jest.fn(function(contextType) {
         if (contextType === '2d') {
+            // Reset clearRectCalledWith for each getContext call if needed, or ensure mockContext is fresh
+            mockContext.clearRectCalledWith = null;
             return mockContext;
         }
         return null;
-    },
+    }),
     // Add other canvas properties/methods if needed by WorldView
 };
 const mockContext = {
-    clearRect: function(x, y, width, height) {
-        // console.log(`Mock context.clearRect called with ${x}, ${y}, ${width}, ${height}`);
+    clearRect: jest.fn(function(x, y, width, height) {
         mockContext.clearRectCalledWith = { x, y, width, height };
-    },
-    clearRectCalledWith: null,
+    }),
+    clearRectCalledWith: null, // To check arguments
     // Properties for image smoothing tests
     imageSmoothingEnabled: undefined,
     mozImageSmoothingEnabled: undefined,
     webkitImageSmoothingEnabled: undefined,
     msImageSmoothingEnabled: undefined,
-    // Add other context methods if WorldView directly calls them beyond getContext and clearRect via clear()
+    // Add other context methods if WorldView directly calls them
 };
 
-const originalDocument = global.document; // Store original document if it exists
-global.document = {
-    createElement: function(tagName) {
-        if (tagName === 'canvas') {
-            // Reset mockCanvas for each creation if necessary, or use a fresh one
-            mockCanvas.width = 0;
-            mockCanvas.height = 0;
-            return mockCanvas;
-        }
-        return originalDocument ? originalDocument.createElement(tagName) : {};
-    },
-    body: {
-        appendChild: function(element) {
-            // console.log("Mock document.body.appendChild called with:", element);
-            global.document.body.appendedChild = element;
-        },
-        appendedChild: null,
-    }
-};
+// Keep a reference to the original document if it exists (e.g. in a JSDOM environment from Jest)
+const originalDocument = global.document;
 
-// Dynamically import WorldView after setting up mocks if using ES modules,
-// or ensure mocks are up before WorldView is loaded if using other module systems.
-// For this environment, we assume WorldView will use the mocked document when loaded.
-// If WorldView was a real ES module, it would be: import WorldView from '../WorldView.js';
-// For now, let's assume WorldView class definition will be available or loaded globally for the test.
-// If not, this test file would need to be structured differently (e.g. using Jest's module mocking).
+describe('WorldView', () => {
+    let view;
 
-// Placeholder for WorldView class - in a real setup, this would be imported.
-// class WorldView { constructor(width, height) { /* ... */ } getContext() { /* ... */ } clear() { /* ... */ } getCanvas() { /* ... */ } }
+    beforeEach(() => {
+        // Setup mocks for document and appendChild before each test
+        global.document = {
+            createElement: jest.fn(tagName => {
+                if (tagName === 'canvas') {
+                    // Return a fresh mock canvas for each WorldView instance if constructor modifies it
+                    // Or reset properties of the shared mockCanvas
+                    mockCanvas.width = 0;
+                    mockCanvas.height = 0;
+                    mockCanvas.getContext.mockClear(); // Clear mock calls for getContext
+                    mockContext.clearRect.mockClear(); // Clear mock calls for clearRect
+                    mockContext.clearRectCalledWith = null;
+                    return mockCanvas;
+                }
+                // Fallback for other elements if WorldView creates them
+                return originalDocument ? originalDocument.createElement(tagName) : {};
+            }),
+            getElementById: jest.fn(id => {
+                if (id === 'uiContainer') {
+                    return { appendChild: jest.fn() }; // Mock the uiContainer and its appendChild
+                }
+                return null;
+            }),
+            body: {
+                appendChild: jest.fn(),
+                // Store what was appended if needed for assertions
+                appendedChild: null
+            }
+        };
+        // Assign appendedChild inside the mock if you need to check it
+        // Note: WorldView actually appends to 'uiContainer', not document.body directly based on WorldView.js
+        // So, the mock for getElementById('uiContainer').appendChild will be called.
+        // If direct document.body.appendChild was also used by WorldView, this would also be relevant:
+        // global.document.body.appendChild.mockImplementation(element => {
+        //     global.document.body.appendedChild = element;
+        // });
 
+        // Create a new WorldView instance for each test
+        view = new WorldView(100, 50);
+    });
 
-console.log("--- Running WorldView.test.js ---");
+    afterEach(() => {
+        // Restore original document to avoid interference between test files
+        global.document = originalDocument;
+    });
 
-// Test Suite for WorldView
-try {
-    // Test 1: Constructor - Creates an HTMLCanvasElement
-    console.log("Test 1: Constructor - Creates an HTMLCanvasElement");
-    let view = new WorldView(100, 50); // WorldView should be loaded/defined here
-    assert(view.getCanvas() === mockCanvas, "Test 1 Failed: Canvas element was not the mockCanvas.");
-    console.log("Test 1 Passed.");
+    test('constructor should create an HTMLCanvasElement', () => {
+        expect(global.document.createElement).toHaveBeenCalledWith('canvas');
+        expect(view.getCanvas()).toBe(mockCanvas);
+    });
 
-    // Test 2: Constructor - Sets the specified width and height on the canvas
-    console.log("Test 2: Constructor - Sets width and height");
-    assert(view.getCanvas().width === 100, "Test 2 Failed: Width was not set correctly.");
-    assert(view.getCanvas().height === 50, "Test 2 Failed: Height was not set correctly.");
-    console.log("Test 2 Passed.");
+    test('constructor should set the specified width and height on the canvas', () => {
+        expect(view.getCanvas().width).toBe(100);
+        expect(view.getCanvas().height).toBe(50);
+    });
 
-    // Test 3: Constructor - Appends the canvas to the document body
-    console.log("Test 3: Constructor - Appends canvas to body");
-    assert(global.document.body.appendedChild === mockCanvas, "Test 3 Failed: Canvas was not appended to body.");
-    console.log("Test 3 Passed.");
+    test('constructor should append the canvas to the document body', () => {
+        expect(global.document.body.appendChild).toHaveBeenCalledWith(mockCanvas);
+        expect(global.document.body.appendedChild).toBe(mockCanvas);
+    });
 
-    // Test 4: getContext() returns a CanvasRenderingContext2D
-    console.log("Test 4: getContext() returns a 2D context");
-    let context = view.getContext();
-    assert(context === mockContext, "Test 4 Failed: Did not return mockContext.");
-    console.log("Test 4 Passed.");
+    test('getContext should return a 2D rendering context', () => {
+        const context = view.getContext();
+        expect(mockCanvas.getContext).toHaveBeenCalledWith('2d');
+        expect(context).toBe(mockContext);
+    });
 
-    // Test 5: getCanvas() returns the created canvas element
-    console.log("Test 5: getCanvas() returns the canvas element");
-    assert(view.getCanvas() === mockCanvas, "Test 5 Failed: Did not return the mockCanvas element.");
-    console.log("Test 5 Passed.");
+    test('getCanvas should return the created canvas element', () => {
+        expect(view.getCanvas()).toBe(mockCanvas);
+    });
 
-    // Test 6: clear() calls clearRect on the context
-    console.log("Test 6: clear() calls clearRect on the context");
-    mockContext.clearRectCalledWith = null; // Reset spy
-    view.clear();
-    assert(mockContext.clearRectCalledWith !== null, "Test 6 Failed: clearRect was not called.");
-    assert(mockContext.clearRectCalledWith.x === 0, "Test 6 Failed: clearRect x !== 0.");
-    assert(mockContext.clearRectCalledWith.y === 0, "Test 6 Failed: clearRect y !== 0.");
-    assert(mockContext.clearRectCalledWith.width === 100, "Test 6 Failed: clearRect width !== 100.");
-    assert(mockContext.clearRectCalledWith.height === 50, "Test 6 Failed: clearRect height !== 50.");
-    console.log("Test 6 Passed.");
+    test('clear should call clearRect on the context with correct dimensions', () => {
+        view.clear();
+        expect(mockContext.clearRect).toHaveBeenCalledTimes(1);
+        expect(mockContext.clearRectCalledWith).toEqual({ x: 0, y: 0, width: 100, height: 50 });
+    });
 
-    // --- Tests for setImageSmoothing ---
-    // Reset context properties for these specific tests
-    function resetSmoothingProperties(defaultValue) {
-        mockContext.imageSmoothingEnabled = defaultValue;
-        mockContext.mozImageSmoothingEnabled = defaultValue;
-        mockContext.webkitImageSmoothingEnabled = defaultValue;
-        mockContext.msImageSmoothingEnabled = defaultValue;
-    }
+    describe('setImageSmoothing', () => {
+        beforeEach(() => {
+            // Reset smoothing properties on the mock context before each smoothing test
+            mockContext.imageSmoothingEnabled = undefined;
+            mockContext.mozImageSmoothingEnabled = undefined;
+            mockContext.webkitImageSmoothingEnabled = undefined;
+            mockContext.msImageSmoothingEnabled = undefined;
+        });
 
-    console.log("Test 7: setImageSmoothing(true) sets context properties to true");
-    resetSmoothingProperties(false); // Start from a known different state
-    view.setImageSmoothing(true); // view is still the one from previous tests (100x50)
-    assert(mockContext.imageSmoothingEnabled === true, "Test 7 Failed: imageSmoothingEnabled not true.");
-    assert(mockContext.mozImageSmoothingEnabled === true, "Test 7 Failed: mozImageSmoothingEnabled not true.");
-    assert(mockContext.webkitImageSmoothingEnabled === true, "Test 7 Failed: webkitImageSmoothingEnabled not true.");
-    assert(mockContext.msImageSmoothingEnabled === true, "Test 7 Failed: msImageSmoothingEnabled not true.");
-    console.log("Test 7 Passed.");
+        test('should set imageSmoothingEnabled and vendor-specific properties to true', () => {
+            view.setImageSmoothing(true);
+            expect(mockContext.imageSmoothingEnabled).toBe(true);
+            expect(mockContext.mozImageSmoothingEnabled).toBe(true);
+            expect(mockContext.webkitImageSmoothingEnabled).toBe(true);
+            expect(mockContext.msImageSmoothingEnabled).toBe(true);
+        });
 
-    console.log("Test 8: setImageSmoothing(false) sets context properties to false");
-    resetSmoothingProperties(true); // Start from a known different state
-    view.setImageSmoothing(false);
-    assert(mockContext.imageSmoothingEnabled === false, "Test 8 Failed: imageSmoothingEnabled not false.");
-    assert(mockContext.mozImageSmoothingEnabled === false, "Test 8 Failed: mozImageSmoothingEnabled not false.");
-    assert(mockContext.webkitImageSmoothingEnabled === false, "Test 8 Failed: webkitImageSmoothingEnabled not false.");
-    assert(mockContext.msImageSmoothingEnabled === false, "Test 8 Failed: msImageSmoothingEnabled not false.");
-    console.log("Test 8 Passed.");
-
-    console.log("All WorldView tests passed!");
-
-} catch (e) {
-    console.error("WorldView test failed:", e.message);
-    console.error(e.stack);
-} finally {
-    // Restore original document if it was changed
-    // global.document = originalDocument; // Be cautious with global state in real test runners
-}
-
-// End of WorldView.test.js
+        test('should set imageSmoothingEnabled and vendor-specific properties to false', () => {
+            view.setImageSmoothing(false);
+            expect(mockContext.imageSmoothingEnabled).toBe(false);
+            expect(mockContext.mozImageSmoothingEnabled).toBe(false);
+            expect(mockContext.webkitImageSmoothingEnabled).toBe(false);
+            expect(mockContext.msImageSmoothingEnabled).toBe(false);
+        });
+    });
+});

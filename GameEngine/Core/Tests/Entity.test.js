@@ -16,40 +16,57 @@ class AnotherTestComponent extends Component {
   }
 }
 
-console.log('Running Entity Tests...');
+describe('Entity', () => {
+  test('Entity IDs should be unique', () => {
+    const entity1 = new Entity();
+    const entity2 = new Entity();
+    expect(entity1.id).not.toBe(entity2.id);
+  });
 
-// Test 1: Entity ID uniqueness (simple check for two entities)
-const entity1 = new Entity();
-const entity2 = new Entity();
-console.assert(entity1.id !== entity2.id, 'Test Failed: Entity IDs are not unique.');
-console.log('Test 1 Passed: Entity IDs are unique.');
+  test('should add and check for a component', () => {
+    const entity = new Entity();
+    entity.addComponent(new TestComponent());
+    expect(entity.hasComponent('TestComponent')).toBe(true);
+  });
 
-// Test 2: addComponent and hasComponent
-entity1.addComponent(new TestComponent());
-console.assert(entity1.hasComponent('TestComponent'), 'Test Failed: Entity should have TestComponent after adding.');
-console.log('Test 2 Passed: addComponent and hasComponent.');
+  // Test 3: getComponent
+  // Note: entity1 from previous test structure is not available here.
+  // Each test should be self-contained or use beforeEach for setup.
+  // For this refactor, I will adapt Test 3 to be self-contained.
+  test('should retrieve a component and its data', () => {
+    const entityForTest3 = new Entity();
+    entityForTest3.addComponent(new TestComponent());
+    const retrievedComponent = entityForTest3.getComponent('TestComponent');
+    expect(retrievedComponent).toBeInstanceOf(TestComponent);
+    expect(retrievedComponent.value).toBe('test');
+  });
 
+  // Test 4: removeComponent
+  // Adapting Test 4 similarly
+  test('should remove a component', () => {
+    const entityForTest4 = new Entity();
+    entityForTest4.addComponent(new TestComponent());
+    entityForTest4.removeComponent('TestComponent');
+    expect(entityForTest4.hasComponent('TestComponent')).toBe(false);
+  });
+
+  // Test 5: getComponent for non-existent component
+  test('getComponent for non-existent component should return undefined', () => {
+    const entityForTest5 = new Entity();
+    const nonExistent = entityForTest5.getComponent('NonExistentComponent');
+    expect(nonExistent).toBeUndefined();
+  });
+
+  // Test 6: Adding multiple components
+  test('should add and retrieve multiple components', () => {
+    const entityForTest6 = new Entity();
+    entityForTest6.addComponent(new TestComponent());
+    entityForTest6.addComponent(new AnotherTestComponent());
+    expect(entityForTest6.hasComponent('TestComponent')).toBe(true);
+    expect(entityForTest6.hasComponent('AnotherTestComponent')).toBe(true);
+    expect(entityForTest6.getComponent('AnotherTestComponent').anotherValue).toBe(123);
+  });
+});
+// Old test logs and structure will be removed below.
 // Test 3: getComponent
-const retrievedComponent = entity1.getComponent('TestComponent');
-console.assert(retrievedComponent instanceof TestComponent, 'Test Failed: getComponent should return TestComponent instance.');
-console.assert(retrievedComponent.value === 'test', 'Test Failed: TestComponent data not retrieved correctly.');
-console.log('Test 3 Passed: getComponent retrieves component and data.');
-
-// Test 4: removeComponent
-entity1.removeComponent('TestComponent');
-console.assert(!entity1.hasComponent('TestComponent'), 'Test Failed: Entity should not have TestComponent after removing.');
-console.log('Test 4 Passed: removeComponent.');
-
-// Test 5: getComponent for non-existent component
-const nonExistent = entity1.getComponent('NonExistentComponent');
-console.assert(typeof nonExistent === 'undefined', 'Test Failed: getComponent for non-existent should return undefined.');
-console.log('Test 5 Passed: getComponent for non-existent component.');
-
-// Test 6: Adding multiple components
-entity2.addComponent(new TestComponent());
-entity2.addComponent(new AnotherTestComponent());
-console.assert(entity2.hasComponent('TestComponent') && entity2.hasComponent('AnotherTestComponent'), 'Test Failed: Entity should have multiple components.');
-console.assert(entity2.getComponent('AnotherTestComponent').anotherValue === 123, 'Test Failed: Data from second component incorrect.');
-console.log('Test 6 Passed: Adding and retrieving multiple components.');
-
-console.log('Entity Tests Finished.');
+const retrievedComponent = new Entity().getComponent('TestComponent'); // This line is problematic and will be removed.
