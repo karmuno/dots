@@ -1,6 +1,5 @@
 import Entity from './Entity.js'; // Assuming Entity.js is in the same directory
 import BoundaryEntity from '../Entities/BoundaryEntity.js';
-import GrowthSystem from '../Systems/GrowthSystem.js';
 import Dot from '../Entities/Dot.js';
 import Dit from '../Entities/Dit.js';
 
@@ -15,10 +14,6 @@ class World {
     const boundary = new BoundaryEntity(); // BoundaryEntity itself is a subclass of Entity
     this.entities[boundary.id] = boundary;
     this.boundary = boundary; // Keep a direct reference for easy access
-
-    // Add GrowthSystem
-    const growthSystem = new GrowthSystem();
-    this.addSystem(growthSystem);
   }
 
   createEntity() {
@@ -64,7 +59,6 @@ class World {
 
     // Note: If entities themselves had update methods, you might call them here,
     // but the ECS pattern prefers systems to handle all logic.
-    // The GrowthSystem will handle updating the boundary's radius.
   }
 
   createDot() {
