@@ -1,4 +1,5 @@
 // GameEngine/UI/DotSheet.js
+import EnergyComponent from '../Components/EnergyComponent.js';
 
 /**
  * @class DotSheet
@@ -38,11 +39,13 @@ export default class DotSheet {
     const transform = entity.components.Transform;
     const appearance = entity.components.Appearance;
     const movement = entity.components.Movement;
+    const energyComponent = entity.components.EnergyComponent; // Get the EnergyComponent
     // ID is a property of the entity itself
     const id = entity.id;
 
+    // Check for core components, EnergyComponent is handled separately for its display block
     if (!transform || !appearance || !movement) {
-      this.panelElement.innerHTML = `<p>Entity ${id} is missing required components for display.</p>`;
+      this.panelElement.innerHTML = `<p>Entity ${id} is missing core components (Transform, Appearance, or Movement) for display.</p>`;
       console.warn(`DotSheet: Entity ${id} is missing Transform, Appearance, or Movement components.`);
       return;
     }
@@ -67,10 +70,20 @@ export default class DotSheet {
                     VY: ${movement.velocityY.toFixed(2)}
                   </div>`;
     htmlContent += '</div>'; // End of dynamic info group
-    
-    // Example of how to add more sections later:
-    // htmlContent += '<h4>Advanced Stats</h4>';
-    // htmlContent += '<div class="info-item"><span class="info-label">Energy:</span> ...</div>';
+
+    htmlContent += '<h4>Energy Status</h4>';
+    htmlContent += '<div class="info-group">'; // Group for Energy
+
+    if (energyComponent) {
+        const currentEnergy = energyComponent.getEnergy(); // Using getter
+        const maxEnergy = energyComponent.maxEnergy;
+
+        htmlContent += `<div class="info-item"><span class="info-label">Energy:</span> ${currentEnergy.toFixed(1)} / ${maxEnergy}</div>`;
+        htmlContent += `<div class="progress-bar-container"><div class="progress-bar energy" style="width: ${(currentEnergy / maxEnergy * 100).toFixed(0)}%;"></div></div>`;
+    } else {
+        htmlContent += '<div class="info-item">No EnergyComponent found.</div>';
+    }
+    htmlContent += '</div>'; // End of Energy group
 
     this.panelElement.innerHTML = htmlContent;
   }
