@@ -1,4 +1,8 @@
 import Movement from '../Components/Movement.js';
+import EnergyComponent from '../Components/EnergyComponent.js';
+import MetabolizerComponent from '../Components/MetabolizerComponent.js';
+// Assuming Dits are instances of a Dit class. If using a component to identify Dits, import that.
+// import Dit from '../Entities/Dit.js'; // Or check entity.constructor.name === 'Dit'
 
 // Vector Math Helpers
 function dot(v1, v2) {
@@ -129,6 +133,35 @@ export default class CollisionSystem {
           }
 
           if (haveCollided) {
+            // Dot-Dit collision and consumption logic
+            const isEntityADot = entityA.constructor.name === 'Dot';
+            const isEntityBDot = entityB.constructor.name === 'Dot';
+            const isEntityADit = entityA.constructor.name === 'Dit'; // Assuming Dit class exists and is used
+            const isEntityBDit = entityB.constructor.name === 'Dit'; // Assuming Dit class exists and is used
+
+            if ((isEntityADot && isEntityBDit) || (isEntityADit && isEntityBDot)) {
+                const dotEntity = isEntityADot ? entityA : entityB;
+                const ditEntity = isEntityADit ? entityA : entityB;
+
+                if (dotEntity.hasComponent('EnergyComponent') && dotEntity.hasComponent('MetabolizerComponent')) {
+                    const energyComponent = dotEntity.getComponent('EnergyComponent');
+                    const metabolizerComponent = dotEntity.getComponent('MetabolizerComponent');
+
+                    const DIT_ENERGY_VALUE = 10; // As per HUNGER_METABOLISM_BUILD_PLAN.md
+                    const energyGained = DIT_ENERGY_VALUE * metabolizerComponent.getEfficiency();
+
+                    energyComponent.increaseEnergy(energyGained);
+                    world.removeEntity(ditEntity.id); // Remove Dit from the world
+
+                    // console.log(`Dot ${dotEntity.id} consumed Dit ${ditEntity.id} and gained ${energyGained} energy.`);
+
+                    // After consumption, skip further collision response for this pair in this iteration.
+                    // This means the Dit won't cause a physics bounce with the Dot that just ate it.
+                    continue; // Skip to the next entity pair
+                }
+            }
+
+            // Regular collision physics response if not a Dot-Dit consumption
             let normal = { x: 0, y: 0 };
             let penetrationDepth = 0; // Will be calculated later
 
@@ -314,8 +347,7 @@ export default class CollisionSystem {
             }
 
 
-            const isEntityADot = entityA.constructor.name === 'Dot';
-            const isEntityBDot = entityB.constructor.name === 'Dot';
+            // Note: isEntityADot and isEntityBDot already declared above for Dit consumption
             const isEntityABoundary = entityA.constructor.name === 'BoundaryEntity' && colliderA.type === 'circle';
             const isEntityBBoundary = entityB.constructor.name === 'BoundaryEntity' && colliderB.type === 'circle';
 

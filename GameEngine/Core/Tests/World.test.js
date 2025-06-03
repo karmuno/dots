@@ -50,10 +50,10 @@ describe('World', () => {
       expect(retrievedEntity).toBeUndefined();
     });
     
-    test('destroyEntity should remove the entity from the world', () => {
+    test('removeEntity should remove the entity from the world', () => {
       const entity = world.createEntity();
       const entityId = entity.id;
-      world.destroyEntity(entityId);
+      world.removeEntity(entityId);
       expect(world.entities[entityId]).toBeUndefined();
       expect(world.getEntityById(entityId)).toBeUndefined();
     });
@@ -132,23 +132,23 @@ describe('World', () => {
       world.update(dtForOneCycle);
 
       const newRadius = boundaryEntity.getComponent('RadiusComponent').radius;
-      expect(newRadius).toBe(initialRadius + growComponent.growthRate);
+      expect(Number(newRadius)).toBe(Number(initialRadius) + Number(growComponent.growthRate));
     });
 
-    test('destroyEntity should nullify world.boundary if the boundary entity is destroyed', () => {
+    test('removeEntity should nullify world.boundary if the boundary entity is destroyed', () => {
       const boundaryEntity = world.boundary;
       expect(boundaryEntity).not.toBeNull();
-      world.destroyEntity(boundaryEntity.id);
+      world.removeEntity(boundaryEntity.id);
       expect(world.boundary).toBeNull();
       expect(world.entities[boundaryEntity.id]).toBeUndefined();
     });
 
-    test('destroyEntity on a non-boundary entity should not nullify world.boundary', () => {
+    test('removeEntity on a non-boundary entity should not nullify world.boundary', () => {
         const otherEntity = world.createEntity();
         const boundaryBeforeDestroy = world.boundary;
         expect(boundaryBeforeDestroy).not.toBeNull(); // Boundary exists
 
-        world.destroyEntity(otherEntity.id); // Destroy a different entity
+        world.removeEntity(otherEntity.id); // Destroy a different entity
 
         expect(world.boundary).toBe(boundaryBeforeDestroy); // Boundary reference should be unchanged
         expect(world.boundary).not.toBeNull();

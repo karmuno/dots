@@ -78,8 +78,23 @@ export default class DotSheet {
         const currentEnergy = energyComponent.getEnergy(); // Using getter
         const maxEnergy = energyComponent.maxEnergy;
 
-        htmlContent += `<div class="info-item"><span class="info-label">Energy:</span> ${currentEnergy.toFixed(1)} / ${maxEnergy}</div>`;
-        htmlContent += `<div class="progress-bar-container"><div class="progress-bar energy" style="width: ${(currentEnergy / maxEnergy * 100).toFixed(0)}%;"></div></div>`;
+        // Debug energy values
+        if (isNaN(currentEnergy) || isNaN(maxEnergy)) {
+          console.error('DotSheet: NaN energy values detected', {
+            entityId: entity.id,
+            currentEnergy,
+            maxEnergy,
+            energyComponent
+          });
+          // Use safe fallback values for display
+          const safeCurrentEnergy = isNaN(currentEnergy) ? 0 : currentEnergy;
+          const safeMaxEnergy = isNaN(maxEnergy) ? 100 : maxEnergy;
+          htmlContent += `<div class="info-item"><span class="info-label">Energy:</span> ${safeCurrentEnergy.toFixed(1)} / ${safeMaxEnergy} (NaN detected!)</div>`;
+          htmlContent += `<div class="progress-bar-container"><div class="progress-bar energy" style="width: 0%;"></div></div>`;
+        } else {
+          htmlContent += `<div class="info-item"><span class="info-label">Energy:</span> ${currentEnergy.toFixed(1)} / ${maxEnergy}</div>`;
+          htmlContent += `<div class="progress-bar-container"><div class="progress-bar energy" style="width: ${(currentEnergy / maxEnergy * 100).toFixed(0)}%;"></div></div>`;
+        }
     } else {
         htmlContent += '<div class="info-item">No EnergyComponent found.</div>';
     }
@@ -126,6 +141,13 @@ export default class DotSheet {
     if (this.panelElement) {
       this.panelElement.innerHTML = '<p>Select an inspectable entity to see its information.</p>';
     }
+  }
+
+  /**
+   * Alias for clearPanel to match usage in main.js
+   */
+  clearDisplay() {
+    this.clearPanel();
   }
 }
 

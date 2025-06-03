@@ -14,7 +14,13 @@ class GameLoop {
     }
 
     _loop(currentTime) {
-        const deltaTime = (currentTime - this.lastTime) / 1000; // Convert to seconds
+        let deltaTime = (currentTime - this.lastTime) / 1000; // Convert to seconds
+        
+        // Cap deltaTime to prevent huge values on first frame or after pauses
+        if (deltaTime > 0.1) { // Cap at 100ms
+            deltaTime = 0.016; // Use ~60fps fallback
+        }
+        
         // console.log("GameLoop: _loop called at currentTime:", currentTime, "lastTime:", this.lastTime);
         
         if (this.world && typeof this.world.update === 'function') {
