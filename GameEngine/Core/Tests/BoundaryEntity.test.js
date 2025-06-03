@@ -40,10 +40,10 @@ describe('BoundaryEntity', () => {
   test('uses default values if not provided in constructor', () => {
     const defaultBoundary = new BoundaryEntity();
     const radiusComp = defaultBoundary.getComponent('RadiusComponent');
-    expect(radiusComp.radius).toBe(500); // Default initialRadius for BoundaryEntity
+    expect(radiusComp.radius).toBe(100); // Default initialRadius for BoundaryEntity
 
     const growComp = defaultBoundary.getComponent('GrowComponent');
     expect(growComp.growthRate).toBe(20); // Default growthRate for BoundaryEntity
-    expect(growComp.interval).toBe(1000); // Default interval for BoundaryEntity
+    expect(growComp.interval).toBe(10000); // Default interval for BoundaryEntity
   });
 });

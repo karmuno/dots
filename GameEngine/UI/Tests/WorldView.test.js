@@ -72,7 +72,8 @@ describe('WorldView', () => {
         // });
 
         // Create a new WorldView instance for each test
-        view = new WorldView(100, 50);
+        const mockWorld = { entities: {} };
+        view = new WorldView(mockWorld, 100, 50);
     });
 
     afterEach(() => {
