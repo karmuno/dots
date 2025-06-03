@@ -6,12 +6,20 @@ class MetabolismSystem {
     this.world = world;
   }
 
-  update(deltaTime) {
-    if (!this.world || !this.world.entities) {
+  update(world, deltaTime) {
+    // Use the passed world parameter instead of this.world for consistency with other systems
+    if (!world || !world.entities) {
       return;
     }
 
-    for (const entity of Object.values(this.world.entities)) {
+    // Debug: Validate deltaTime
+    if (isNaN(deltaTime)) {
+      console.error('MetabolismSystem: received NaN deltaTime', { deltaTime });
+      console.trace();
+      return;
+    }
+
+    for (const entity of Object.values(world.entities)) {
       if (!entity.hasComponent('MetabolizerComponent') || !entity.hasComponent('EnergyComponent')) {
         continue;
       }
@@ -25,12 +33,32 @@ class MetabolismSystem {
       // For now, let's assume metabolizer.metabolicRate is for passive decay as per its original name.
       const passiveDecayRate = metabolizer.getMetabolicRate(); // Original 'metabolicRate'
       if (passiveDecayRate > 0) {
-        energyComponent.decreaseEnergy(passiveDecayRate * deltaTime);
+        const energyDecay = passiveDecayRate * deltaTime;
+        // Debug: Check for NaN before calling decreaseEnergy
+        if (isNaN(energyDecay)) {
+          console.error('MetabolismSystem: NaN energy decay calculated', {
+            entityId: entity.id,
+            passiveDecayRate,
+            deltaTime,
+            energyDecay
+          });
+          console.trace();
+        } else {
+          energyComponent.decreaseEnergy(energyDecay);
+        }
       }
 
       // 2. Nutrient Conversion to Energy
       const conversionRate = metabolizer.getNutrientConversionRate(); // Nutrients per second
       const efficiency = metabolizer.getEfficiency();
+
+      // Safety check for NaN inputs
+      if (isNaN(conversionRate) || isNaN(efficiency) || isNaN(deltaTime)) {
+        console.error('MetabolismSystem: NaN input detected', {
+          conversionRate, efficiency, deltaTime, entityId: entity.id
+        });
+        continue;
+      }
 
       let nutrientsToProcessThisTick = conversionRate * deltaTime;
 
@@ -46,14 +74,15 @@ class MetabolismSystem {
       // Determine how much of each nutrient to process proportionally
       // if attempting to process more than available.
       let processFactor = 1;
-      if (nutrientsToProcessThisTick > totalStored) {
+      if (nutrientsToProcessThisTick > totalStored && nutrientsToProcessThisTick > 0) {
         processFactor = totalStored / nutrientsToProcessThisTick; // Scale down processing to what's available
         nutrientsToProcessThisTick = totalStored; // Process all available nutrients
       }
 
-      const redToProcess = Math.min(storedRed, storedRed / totalStored * nutrientsToProcessThisTick) || 0;
-      const greenToProcess = Math.min(storedGreen, storedGreen / totalStored * nutrientsToProcessThisTick) || 0;
-      const blueToProcess = Math.min(storedBlue, storedBlue / totalStored * nutrientsToProcessThisTick) || 0;
+      // Calculate proportional processing amounts, avoiding division by zero
+      const redToProcess = totalStored > 0 ? Math.min(storedRed, storedRed / totalStored * nutrientsToProcessThisTick) : 0;
+      const greenToProcess = totalStored > 0 ? Math.min(storedGreen, storedGreen / totalStored * nutrientsToProcessThisTick) : 0;
+      const blueToProcess = totalStored > 0 ? Math.min(storedBlue, storedBlue / totalStored * nutrientsToProcessThisTick) : 0;
 
       // Ensure we don't process more than available due to floating point issues
       // And also, that we consume specified amounts from the component

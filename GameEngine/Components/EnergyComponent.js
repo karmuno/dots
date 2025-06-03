@@ -18,6 +18,18 @@ export default class EnergyComponent extends Component {
     this.maxEnergy = options.maxEnergy !== undefined ? options.maxEnergy : 100;
     this.currentEnergy = options.initialEnergy !== undefined ? options.initialEnergy : this.maxEnergy;
 
+    // Debug constructor inputs
+    if (isNaN(this.maxEnergy)) {
+      console.error('EnergyComponent: maxEnergy is NaN in constructor', { options, maxEnergy: this.maxEnergy });
+      console.trace();
+      this.maxEnergy = 100; // fallback
+    }
+    if (isNaN(this.currentEnergy)) {
+      console.error('EnergyComponent: currentEnergy is NaN in constructor', { options, currentEnergy: this.currentEnergy, maxEnergy: this.maxEnergy });
+      console.trace();
+      this.currentEnergy = this.maxEnergy; // fallback
+    }
+
     // Ensure initial energy is within bounds
     this.currentEnergy = Math.max(0, Math.min(this.currentEnergy, this.maxEnergy));
   }
@@ -39,7 +51,18 @@ export default class EnergyComponent extends Component {
       console.warn('EnergyComponent: Amount to increase should be positive.');
       return;
     }
-    this.currentEnergy = Math.min(this.currentEnergy + amount, this.maxEnergy);
+    if (isNaN(amount)) {
+      console.error('EnergyComponent: increaseEnergy called with NaN amount:', amount);
+      console.trace();
+      return;
+    }
+    const newEnergy = Math.min(this.currentEnergy + amount, this.maxEnergy);
+    if (isNaN(newEnergy)) {
+      console.error('EnergyComponent: increaseEnergy resulted in NaN. currentEnergy:', this.currentEnergy, 'amount:', amount);
+      console.trace();
+      return;
+    }
+    this.currentEnergy = newEnergy;
   }
 
   /**
@@ -51,7 +74,18 @@ export default class EnergyComponent extends Component {
       console.warn('EnergyComponent: Amount to decrease should be positive.');
       return;
     }
-    this.currentEnergy = Math.max(this.currentEnergy - amount, 0);
+    if (isNaN(amount)) {
+      console.error('EnergyComponent: decreaseEnergy called with NaN amount:', amount);
+      console.trace();
+      return;
+    }
+    const newEnergy = Math.max(this.currentEnergy - amount, 0);
+    if (isNaN(newEnergy)) {
+      console.error('EnergyComponent: decreaseEnergy resulted in NaN. currentEnergy:', this.currentEnergy, 'amount:', amount);
+      console.trace();
+      return;
+    }
+    this.currentEnergy = newEnergy;
   }
 
   /**
@@ -59,6 +93,11 @@ export default class EnergyComponent extends Component {
    * @param {number} value - The value to set energy to.
    */
   setEnergy(value) {
+    if (isNaN(value)) {
+      console.error('EnergyComponent: setEnergy called with NaN value:', value);
+      console.trace();
+      return;
+    }
     this.currentEnergy = Math.max(0, Math.min(value, this.maxEnergy));
   }
 }

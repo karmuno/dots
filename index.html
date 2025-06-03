@@ -138,6 +138,40 @@
         .button-group button:active {
             background-color: #222;
         }
+        
+        /* DotSheet info panel styles */
+        .info-group {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .info-group:last-child {
+            border-bottom: none;
+        }
+        .info-item {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        /* Progress bar styles */
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: #ddd;
+            border-radius: 6px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .progress-bar.energy {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
