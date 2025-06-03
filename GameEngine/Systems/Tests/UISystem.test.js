@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import UISystem from '../UISystem.js'; // Adjust path as needed
 
 // Mock Components

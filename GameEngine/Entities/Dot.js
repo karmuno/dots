@@ -5,6 +5,7 @@ import Appearance from '../Components/Appearance.js';
 import ColliderComponent from '../Components/ColliderComponent.js';
 import DrawLayer from '../Components/DrawLayer.js';
 import InspectableComponent from '../Components/InspectableComponent.js';
+import EnergyComponent from '../Components/EnergyComponent.js';
 
 /**
  * @class Dot
@@ -50,5 +51,8 @@ export default class Dot extends Entity {
 
     // Add Inspectable Component
     this.addComponent(new InspectableComponent());
+
+    // Add Energy Component
+    this.addComponent(new EnergyComponent());
   }
 }
