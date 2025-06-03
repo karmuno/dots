@@ -10,10 +10,6 @@ Minimal implementation of hunger/energy mechanics with Dit consumption. Focus on
 - [ ] **Verify energy decay works** - Confirm Dots lose energy over time
 - [ ] **Add energy to DotSheet** - Display current energy as "Energy: 75/100"
 
-### 1.2 Visual Energy Feedback
-- [ ] **Add energy-based opacity** - Dots get dimmer as energy decreases
-- [ ] **Update Appearance in RenderSystem** - Modify opacity based on energy level
-- [ ] **Add low energy indicator** - Dots flash red when energy < 20%
 
 ## Phase 2: Dit Consumption
 
@@ -24,6 +20,7 @@ Minimal implementation of hunger/energy mechanics with Dit consumption. Focus on
 - [ ] **Add energy on consumption** - Increase Dot energy by fixed amount (e.g., +10)
 
 ### 2.2 Consumption Mechanics
+- [ ] **Implement Metabolizer component** - AS in DOTS_METABOLIZER_DESIGN
 - [ ] **Set energy gain per Dit** - Each Dit restores 10 energy points
 - [ ] **Add consumption limit** - Can't eat if already at max energy
 - [ ] **Add visual feedback** - Brief flash when Dit is consumed

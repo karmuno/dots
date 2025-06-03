@@ -347,8 +347,7 @@ export default class CollisionSystem {
             }
 
 
-            const isEntityADot = entityA.constructor.name === 'Dot';
-            const isEntityBDot = entityB.constructor.name === 'Dot';
+            // Note: isEntityADot and isEntityBDot already declared above for Dit consumption
             const isEntityABoundary = entityA.constructor.name === 'BoundaryEntity' && colliderA.type === 'circle';
             const isEntityBBoundary = entityB.constructor.name === 'BoundaryEntity' && colliderB.type === 'circle';
 
