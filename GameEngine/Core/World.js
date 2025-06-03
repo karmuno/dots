@@ -96,8 +96,10 @@ class World {
     this.ditCounter++;
     const id = `dit${this.ditCounter}`;
 
-    // Generate random properties for the dit
-    const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+    // Generate random RGB nutrient values (0-255)
+    const randomRed = Math.floor(Math.random() * 256);
+    const randomGreen = Math.floor(Math.random() * 256);
+    const randomBlue = Math.floor(Math.random() * 256);
     
     // Get initial boundary radius (default 100 from BoundaryEntity constructor)
     const initialRadius = this.boundary ? this.boundary.components.RadiusComponent.radius : 100;
@@ -108,13 +110,17 @@ class World {
     const x = Math.cos(angle) * distance;
     const y = Math.sin(angle) * distance;
 
-    // Instantiate a new Dit
-    const dit = new Dit(id, x, y, randomColor);
+    // Instantiate a new Dit with randomized nutrient values
+    const dit = new Dit(id, x, y, { 
+      red: randomRed, 
+      green: randomGreen, 
+      blue: randomBlue 
+    });
 
     // Add the newly created dit to the world's entities
     this.addEntity(dit);
 
-    console.log(`World: Created new dit - ID: ${id}, X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}, Color: ${randomColor}`);
+    console.log(`World: Created new dit - ID: ${id}, X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}, RGB: (${randomRed}, ${randomGreen}, ${randomBlue})`);
 
     return dit;
   }
