@@ -146,6 +146,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         console.log(`Main: Finished creating ${dots.length} initial dots.`);
 
+        // Create 10 initial dits using world.createDit()
+        const numberOfInitialDits = 10;
+        console.log(`Main: Creating ${numberOfInitialDits} initial dits...`);
+        for (let i = 0; i < numberOfInitialDits; i++) {
+            if (typeof world.createDit === 'function') {
+                const newDit = world.createDit(); // createDit handles adding to world and logging
+                if (!newDit) {
+                    console.error(`Main: world.createDit() did not return a dit on iteration ${i}.`);
+                }
+            } else {
+                console.error("Main: world.createDit is not a function. Cannot create initial dits.");
+                break;
+            }
+        }
+        console.log(`Main: Finished creating initial dits.`);
+
         // Instantiate the game loop with the world and renderer
         // The GameLoop constructor expects 'world' and 'renderer' (which is our renderSystem)
         const gameLoop = new GameLoop(world, renderSystem);
