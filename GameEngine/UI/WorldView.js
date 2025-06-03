@@ -22,10 +22,10 @@ class WorldView {
         uiContainer.appendChild(this.followCamCanvas);
         this.followCamContext = this.followCamCanvas.getContext('2d');
 
-        // Calculate zoom for FollowCam to make ~25 screen pixels correspond to a typical dot's world radius
+        // Calculate zoom for FollowCam to make ~6 screen pixels correspond to a typical dot's world radius
         const typicalDotWorldRadius = 1.5; // Default Dot spriteSize is { width: 3, height: 3 }, so radius is 1.5
-        const targetScreenRadius = 25; // We want the dot to appear with a 25px radius on the FollowCam
-        const calculatedZoom = targetScreenRadius / typicalDotWorldRadius;
+        const targetScreenRadius = 6; // We want the dot to appear with a 6px radius on the FollowCam
+        const calculatedZoom = targetScreenRadius / typicalDotWorldRadius; // This will be 4
 
         this.followCam = new FollowCam(this.followCamCanvas, null, calculatedZoom);
     }
