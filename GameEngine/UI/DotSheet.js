@@ -100,6 +100,33 @@ export default class DotSheet {
     }
     htmlContent += '</div>'; // End of Energy group
 
+    // Metabolized Nutrients Section
+    htmlContent += '<h4>Metabolized Nutrients</h4>';
+    htmlContent += '<div class="info-group">'; // Group for Metabolized Nutrients
+
+    const metabolizerComponent = entity.components.MetabolizerComponent;
+    if (metabolizerComponent) {
+      const red = metabolizerComponent.getCurrentRedStored();
+      const green = metabolizerComponent.getCurrentGreenStored();
+      const blue = metabolizerComponent.getCurrentBlueStored();
+
+      // Assuming direct values can be used for color, normalization might be needed
+      // if MetabolizerComponent stores them in a different range than 0-255.
+      // For now, we use rgbToHex which clamps values to 0-255.
+      const hexColor = rgbToHex(red, green, blue);
+
+      htmlContent += `<div class="info-item">
+                        <span class="info-label">Color Preview:</span>
+                        <div style="width: 20px; height: 20px; background-color: ${hexColor}; display: inline-block; border: 1px solid #ccc;"></div>
+                      </div>`;
+      htmlContent += `<div class="info-item"><span class="info-label">Stored Red:</span> ${red.toFixed(2)}</div>`;
+      htmlContent += `<div class="info-item"><span class="info-label">Stored Green:</span> ${green.toFixed(2)}</div>`;
+      htmlContent += `<div class="info-item"><span class="info-label">Stored Blue:</span> ${blue.toFixed(2)}</div>`;
+    } else {
+      htmlContent += '<div class="info-item">No metabolizer data.</div>';
+    }
+    htmlContent += '</div>'; // End of Metabolized Nutrients group
+
     this.panelElement.innerHTML = htmlContent;
   }
 
@@ -149,6 +176,21 @@ export default class DotSheet {
   clearDisplay() {
     this.clearPanel();
   }
+}
+
+/**
+ * Converts RGB color values to a hex string.
+ * @param {number} r - Red component (0-255).
+ * @param {number} g - Green component (0-255).
+ * @param {number} b - Blue component (0-255).
+ * @returns {string} Hex color string (e.g., "#RRGGBB").
+ */
+function rgbToHex(r, g, b) {
+  const clamp = (value) => Math.max(0, Math.min(255, Math.round(value || 0)));
+  const rHex = clamp(r).toString(16).padStart(2, '0');
+  const gHex = clamp(g).toString(16).padStart(2, '0');
+  const bHex = clamp(b).toString(16).padStart(2, '0');
+  return `#${rHex}${gHex}${bHex}`;
 }
 
 // Add basic CSS for .info-item, .info-label, .info-group to index.html if not already done.
