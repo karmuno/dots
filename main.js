@@ -119,6 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const collisionSystem = new CollisionSystem();
         console.log("CollisionSystem instantiated:", collisionSystem);
         
+        // Instantiate the eating system
+        const eatingSystem = new EatingSystem(world);
+        console.log("EatingSystem instantiated:", eatingSystem);
+        
         // Add systems to the world
         // IMPORTANT: TargetAssignmentSystem was removed
         // The order of systems can be important.
@@ -126,9 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
             world.addSystem(renderSystem);       // Handles drawing
             world.addSystem(movementSystem);     // Handles entity movement
             world.addSystem(metabolismSystem);   // Handles energy consumption for metabolism
+            world.addSystem(eatingSystem);       // Handles Dot-Dit consumption and nutrient absorption
             world.addSystem(collisionSystem);    // Handles collisions (including Dot-Dit consumption)
             world.addSystem(uiSystem);           // Handles UI updates and interactions
-            console.log("RenderSystem, MovementSystem, MetabolismSystem, CollisionSystem, and UISystem added to world.");
+            console.log("RenderSystem, MovementSystem, MetabolismSystem, EatingSystem, CollisionSystem, and UISystem added to world.");
         } else {
             console.error("World.addSystem is not a function. Systems not added.");
         }

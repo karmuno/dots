@@ -9,12 +9,12 @@ class EatingSystem {
     this.world = world;
   }
 
-  update(deltaTime) {
-    if (!this.world || !this.world.entities) {
+  update(world, deltaTime) {
+    if (!world || !world.entities) {
       return;
     }
 
-    const entities = Object.values(this.world.entities);
+    const entities = Object.values(world.entities);
     const dots = entities.filter(e => e.hasComponent('MetabolizerComponent') && e.hasComponent('ColliderComponent') && e.hasComponent('Transform') && e.constructor.name === 'Dot');
     const dits = entities.filter(e => e.hasComponent('NutrientComponent') && e.hasComponent('ColliderComponent') && e.hasComponent('Transform') && e.constructor.name === 'Dit');
 
