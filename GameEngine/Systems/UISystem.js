@@ -1,10 +1,11 @@
 import InspectableComponent from '../Components/InspectableComponent.js';
 
 class UISystem {
-    constructor(world, dotSheet, colorPicker) {
+    constructor(world, dotSheet, colorPicker, worldView) {
         this.world = world;
         this.dotSheet = dotSheet;
         this.colorPicker = colorPicker;
+        this.worldView = worldView; // Store worldView
     }
 
     selectNextInspectableEntity() {
@@ -57,6 +58,12 @@ class UISystem {
         }
 
         console.log("UISystem: Selected entity:", this.world.selectedEntity ? this.world.selectedEntity.id : 'none');
+
+        // Update FollowCam target
+        const followCam = this.worldView ? this.worldView.getFollowCam() : null;
+        if (followCam) {
+            followCam.setTargetEntity(this.world.selectedEntity || null);
+        }
     }
 
     selectPreviousInspectableEntity() {
@@ -110,6 +117,12 @@ class UISystem {
         }
 
         console.log("UISystem: Selected entity (previous):", this.world.selectedEntity ? this.world.selectedEntity.id : 'none');
+
+        // Update FollowCam target
+        const followCam = this.worldView ? this.worldView.getFollowCam() : null;
+        if (followCam) {
+            followCam.setTargetEntity(this.world.selectedEntity || null);
+        }
     }
 }
 

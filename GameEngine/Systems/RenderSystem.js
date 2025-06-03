@@ -92,6 +92,82 @@ class RenderSystem {
         // --- Rendering loop ends ---
 
         context.restore(); // Restore to the state before camera transform
+
+        // --- Follow Cam Rendering ---
+        const followCam = this.worldView.getFollowCam();
+        const selectedEntity = this.worldView.world.selectedEntity; // Assuming world stores selectedEntity
+
+        if (followCam && selectedEntity) {
+            followCam.setTargetEntity(selectedEntity);
+            followCam.update(); // Update camera position based on target
+
+            const followCamContext = this.worldView.getFollowCamContext();
+            if (!followCamContext) {
+                console.error("FollowCamContext not available for rendering.");
+                return; // or skip follow cam rendering
+            }
+
+            // Clear the follow cam canvas
+            followCamContext.clearRect(0, 0, followCam.canvas.width, followCam.canvas.height);
+
+            followCamContext.save();
+            followCam.applyTransform(followCamContext); // Apply follow camera's transform
+
+            // Render entities onto the follow cam context (reuse sortedEntities from main pass)
+            for (const entity of sortedEntities) {
+                const appearance = entity.components.Appearance;
+                const transform = entity.components.Transform;
+
+                if (appearance && transform) {
+                    const { x, y } = transform.position;
+                    const { color, shape } = appearance;
+                    followCamContext.fillStyle = color;
+
+                    if (shape === 'circle') {
+                        let radiusToUse = entity.components.RadiusComponent ? entity.components.RadiusComponent.radius : appearance.radius;
+                        radiusToUse = radiusToUse || 10; // Default radius
+
+                        followCamContext.beginPath();
+                        followCamContext.arc(x, y, radiusToUse, 0, Math.PI * 2);
+                        followCamContext.fill();
+                        followCamContext.closePath();
+
+                        // Optional: Highlight the selected entity in the follow cam view
+                        if (entity === selectedEntity) {
+                            followCamContext.strokeStyle = 'yellow'; // Different highlight color
+                            followCamContext.lineWidth = 1; // Thinner outline
+                            followCamContext.beginPath();
+                            followCamContext.arc(x, y, radiusToUse + followCamContext.lineWidth, 0, Math.PI * 2);
+                            followCamContext.stroke();
+                            followCamContext.closePath();
+                        }
+                    } else if (shape === 'rectangle') {
+                        const { width, height } = appearance;
+                        const rectX = x - width / 2;
+                        const rectY = y - height / 2;
+                        followCamContext.fillRect(rectX, rectY, width, height);
+                        if (entity === selectedEntity) {
+                            followCamContext.strokeStyle = 'yellow';
+                            followCamContext.lineWidth = 1;
+                            followCamContext.strokeRect(rectX - followCamContext.lineWidth / 2, rectY - followCamContext.lineWidth / 2, width + followCamContext.lineWidth, height + followCamContext.lineWidth);
+                        }
+                    } else if (shape === 'sprite') {
+                        // This assumes 'sprite' is rendered as a colored rectangle for now
+                        const { spriteSize } = appearance; // Expects spriteSize: { width, height }
+                        const drawX = x - spriteSize.width / 2;
+                        const drawY = y - spriteSize.height / 2;
+                        followCamContext.fillRect(drawX, drawY, spriteSize.width, spriteSize.height);
+                        if (entity === selectedEntity) {
+                            followCamContext.strokeStyle = 'yellow';
+                            followCamContext.lineWidth = 1;
+                            followCamContext.strokeRect(drawX - followCamContext.lineWidth / 2, drawY - followCamContext.lineWidth / 2, spriteSize.width + followCamContext.lineWidth, spriteSize.height + followCamContext.lineWidth);
+                        }
+                    }
+                    // Add other shapes if necessary
+                }
+            }
+            followCamContext.restore();
+        }
     }
 }
 

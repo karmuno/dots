@@ -28,9 +28,26 @@
             max-width: 100vw;
             padding: 10px;
         }
-        #uiContainer canvas {
-            order: 2; /* Canvas appears second (on the right) */
+        /* #uiContainer canvas {
+            order: 2; / Canvas appears second (on the right) /
+        } */
+
+        #mainGameCanvas {
+            border: 1px solid black;
+            background-color: #DDDDDD; /* Light grey for main game */
+            order: 1; /* Main game canvas first in its group */
+            width: 250px; /* Explicitly set from JS init */
+            height: 250px; /* Explicitly set from JS init */
         }
+
+        #followCamCanvas {
+            border: 1px solid darkblue;
+            background-color: #EEEEFF; /* Light blueish for follow cam */
+            order: 2; /* Follow cam canvas after main game canvas */
+            width: 150px; /* Explicitly set from JS init */
+            height: 150px; /* Explicitly set from JS init */
+        }
+
         #colorPickerContainer {
             padding: 12px;
             border: 1px solid #ccc;

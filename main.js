@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("DotSheet instantiated:", dotSheet);
 
         // Instantiate UISystem
-        const uiSystem = new UISystem(world, dotSheet, colorPicker);
+        const uiSystem = new UISystem(world, dotSheet, colorPicker, worldView); // Added worldView
         console.log("UISystem instantiated:", uiSystem);
 
         // Add Camera Controls
