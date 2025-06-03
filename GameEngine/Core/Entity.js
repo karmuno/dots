@@ -1,8 +1,12 @@
 class Entity {
   static nextId = 0;
 
-  constructor() {
-    this.id = Entity.nextId++;
+  constructor(id = null) {
+    if (id !== null) {
+      this.id = String(id);
+    } else {
+      this.id = String(Entity.nextId++);
+    }
     this.components = {};
   }
 

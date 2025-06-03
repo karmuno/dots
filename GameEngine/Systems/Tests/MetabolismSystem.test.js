@@ -106,7 +106,7 @@ describe('MetabolismSystem', () => {
       // or ensure its components are set up not to cause issues.
       // For simplicity, we'll assume the initial `entity` doesn't affect this test if not properly componentized for it.
       // Or, re-initialize world for this test. Let's remove the default `entity` for clarity for this multi-entity test.
-      world.destroyEntity(entity.id); // Use destroyEntity as per World.js
+      world.removeEntity(entity.id); // Use removeEntity as per World.js
 
 
       metabolismSystem.update(1);

@@ -6,6 +6,7 @@ import MovementSystem from './GameEngine/Systems/MovementSystem.js';
 // import TargetAssignmentSystem from './GameEngine/Systems/TargetAssignmentSystem.js'; // Removed import
 import CollisionSystem from './GameEngine/Systems/CollisionSystem.js';
 import MetabolismSystem from './GameEngine/Systems/MetabolismSystem.js';
+import EatingSystem from './GameEngine/Systems/EatingSystem.js'; // Added import
 import UISystem from './GameEngine/Systems/UISystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
 import ColorPicker from './GameEngine/UI/ColorPicker.js'; // Import ColorPicker

@@ -32,7 +32,7 @@ class World {
     return entity;
   }
 
-  destroyEntity(entityId) {
+  removeEntity(entityId) {
     // Also remove from this.boundary if it's the one being destroyed
     if (this.boundary && this.boundary.id === entityId) {
         // Handle boundary destruction, maybe prevent it or re-create

@@ -8,13 +8,14 @@ describe('BoundaryEntity', () => {
 
   beforeEach(() => {
     // Create a new BoundaryEntity before each test
-    boundary = new BoundaryEntity(200, 15, 500); // Custom values for testing
+    // BoundaryEntity constructor is new BoundaryEntity(initialRadius = 100, growOptions = {})
+    boundary = new BoundaryEntity(200, { growthRate: 15, interval: 500, maxRadius: 500 }); // Custom values for testing
   });
 
   test('constructor creates an entity with an ID', () => {
     expect(boundary.id).toBeDefined();
-    // Entity IDs are typically numbers
-    expect(typeof boundary.id).toBe('number');
+    // Entity IDs are now strings
+    expect(typeof boundary.id).toBe('string');
   });
 
   test('constructor adds RadiusComponent correctly', () => {
