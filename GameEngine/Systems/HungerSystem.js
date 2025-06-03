@@ -23,21 +23,14 @@ export default class HungerSystem {
       return;
     }
 
-    for (const entity of Object.values(this.world.entities)) {
-      if (entity.hasComponent('EnergyComponent')) {
-        const energyComponent = entity.getComponent('EnergyComponent');
-
-        const decayAmount = energyComponent.getDecayRate() * deltaTime;
-
-        if (decayAmount > 0) {
-          energyComponent.decreaseEnergy(decayAmount);
-        }
-
-        // Optional: Log when an entity's energy reaches zero due to decay
-        // if (energyComponent.getEnergy() === 0 && decayAmount > 0) {
-        //   console.log(`HungerSystem: Entity ${entity.id} has depleted its energy.`);
-        // }
-      }
-    }
+    // Future: Implement logic for starvation effects, e.g., applying damage or other penalties
+    // when an entity's energy (or a separate hunger component) is critically low for too long.
+    // This system will no longer directly decrease energy as that is handled by MetabolismSystem.
+    // for (const entity of Object.values(this.world.entities)) {
+    //   // Example: Check for a HungerComponent or critically low EnergyComponent
+    //   // if (entity.hasComponent('HungerComponent') && entity.getComponent('HungerComponent').isStarving()) {
+    //   //   // Apply starvation effects
+    //   // }
+    // }
   }
 }

@@ -6,6 +6,7 @@ import ColliderComponent from '../Components/ColliderComponent.js';
 import DrawLayer from '../Components/DrawLayer.js';
 import InspectableComponent from '../Components/InspectableComponent.js';
 import EnergyComponent from '../Components/EnergyComponent.js';
+import MetabolizerComponent from '../Components/MetabolizerComponent.js';
 
 /**
  * @class Dot
@@ -54,5 +55,8 @@ export default class Dot extends Entity {
 
     // Add Energy Component
     this.addComponent(new EnergyComponent());
+
+    // Add Metabolizer Component
+    this.addComponent(new MetabolizerComponent());
   }
 }

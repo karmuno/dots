@@ -5,6 +5,7 @@ import RenderSystem from './GameEngine/Systems/RenderSystem.js';
 import MovementSystem from './GameEngine/Systems/MovementSystem.js';
 // import TargetAssignmentSystem from './GameEngine/Systems/TargetAssignmentSystem.js'; // Removed import
 import CollisionSystem from './GameEngine/Systems/CollisionSystem.js';
+import MetabolismSystem from './GameEngine/Systems/MetabolismSystem.js';
 import UISystem from './GameEngine/Systems/UISystem.js';
 import WorldView from './GameEngine/UI/WorldView.js';
 import ColorPicker from './GameEngine/UI/ColorPicker.js'; // Import ColorPicker
@@ -34,6 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Instantiate the world
         const world = new World();
         console.log("World instantiated:", world);
+
+        // Instantiate the metabolism system
+        const metabolismSystem = new MetabolismSystem(world);
+        console.log("MetabolismSystem instantiated:", metabolismSystem);
 
         // Create WorldView instance
         const worldView = new WorldView(world, 250, 250); // Pass world instance
@@ -115,12 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add systems to the world
         // IMPORTANT: TargetAssignmentSystem was removed
+        // The order of systems can be important.
         if (typeof world.addSystem === 'function') {
-            world.addSystem(renderSystem); // Render system usually first or last
-            // world.addSystem(targetAssignmentSystem); // Assign targets first // Removed
-            world.addSystem(movementSystem); // Then move based on targets
-            world.addSystem(collisionSystem); // Collision system after movement
-            console.log("RenderSystem, MovementSystem, and CollisionSystem added to world.");
+            world.addSystem(renderSystem);       // Handles drawing
+            world.addSystem(movementSystem);     // Handles entity movement
+            world.addSystem(metabolismSystem);   // Handles energy consumption for metabolism
+            world.addSystem(collisionSystem);    // Handles collisions (including Dot-Dit consumption)
+            world.addSystem(uiSystem);           // Handles UI updates and interactions
+            console.log("RenderSystem, MovementSystem, MetabolismSystem, CollisionSystem, and UISystem added to world.");
         } else {
             console.error("World.addSystem is not a function. Systems not added.");
         }

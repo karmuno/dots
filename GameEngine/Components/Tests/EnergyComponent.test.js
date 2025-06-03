@@ -5,7 +5,7 @@ describe('EnergyComponent', () => {
   let energyComponent;
   const defaultMaxEnergy = 100;
   const defaultInitialEnergy = 100;
-  const defaultDecayRate = 1;
+  // const defaultDecayRate = 1; // Removed
 
   beforeEach(() => {
     energyComponent = new EnergyComponent(); // Uses default options
@@ -14,15 +14,15 @@ describe('EnergyComponent', () => {
   test('should initialize with default values if none provided', () => {
     expect(energyComponent.currentEnergy).toBe(defaultInitialEnergy);
     expect(energyComponent.maxEnergy).toBe(defaultMaxEnergy);
-    expect(energyComponent.naturalDecayRate).toBe(defaultDecayRate);
+    // expect(energyComponent.naturalDecayRate).toBe(defaultDecayRate); // Removed
   });
 
   test('should initialize with provided options', () => {
-    const options = { initialEnergy: 50, maxEnergy: 150, naturalDecayRate: 0.5 };
+    const options = { initialEnergy: 50, maxEnergy: 150 }; // Removed naturalDecayRate
     const customEC = new EnergyComponent(options);
     expect(customEC.currentEnergy).toBe(50);
     expect(customEC.maxEnergy).toBe(150);
-    expect(customEC.naturalDecayRate).toBe(0.5);
+    // expect(customEC.naturalDecayRate).toBe(0.5); // Removed
   });
 
   test('initialEnergy should be capped at maxEnergy during construction', () => {
@@ -89,19 +89,5 @@ describe('EnergyComponent', () => {
   test('setEnergy should clamp value to 0 if below', () => {
     energyComponent.setEnergy(-50);
     expect(energyComponent.currentEnergy).toBe(0);
-  });
-
-  test('getDecayRate should return the natural decay rate', () => {
-    expect(energyComponent.getDecayRate()).toBe(defaultDecayRate);
-  });
-
-  test('setDecayRate should update the natural decay rate', () => {
-    energyComponent.setDecayRate(0.75);
-    expect(energyComponent.naturalDecayRate).toBe(0.75);
-  });
-
-  test('setDecayRate should set rate to 0 if negative value is provided', () => {
-    energyComponent.setDecayRate(-0.5);
-    expect(energyComponent.naturalDecayRate).toBe(0); // Should log warning and set to 0
   });
 });
