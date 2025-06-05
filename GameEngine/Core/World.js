@@ -2,6 +2,9 @@ import Entity from './Entity.js'; // Assuming Entity.js is in the same directory
 import BoundaryEntity from '../Entities/BoundaryEntity.js';
 import Dot from '../Entities/Dot.js';
 import Dit from '../Entities/Dit.js';
+import AcceleratorSystem from '../Systems/AcceleratorSystem.js';
+import SensorSystem from '../Systems/SensorSystem.js';
+import EatWhenHungrySystem from '../Systems/EatWhenHungrySystem.js';
 
 class World {
   constructor() {
@@ -76,7 +79,17 @@ class World {
 
     // Instantiate a new Dot. The Dot constructor handles its own default color
     // and adds InspectableComponent.
-    const dot = new Dot(id, x, y, velocityX, velocityY);
+    // AI_BUILD_PLAN.md defaults: sensorRange: 50, hungerThreshold: 30, thrustPower: 25, thrustEnergyCost: 1
+    const dot = new Dot(id, x, y, velocityX, velocityY,
+                        null, // color (will use default random)
+                        {},   // energyOptions
+                        {},   // metabolizerOptions
+                        true, // aiEnabled
+                        50,   // sensorRange
+                        30,   // hungerThreshold
+                        25,   // thrustPower
+                        1     // thrustEnergyCost
+                        );
 
     // Add the newly created dot to the world's entities
     this.addEntity(dot);

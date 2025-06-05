@@ -7,6 +7,9 @@ import DrawLayer from '../Components/DrawLayer.js';
 import InspectableComponent from '../Components/InspectableComponent.js';
 import EnergyComponent from '../Components/EnergyComponent.js';
 import MetabolizerComponent from '../Components/MetabolizerComponent.js';
+import AcceleratorComponent from '../Components/AcceleratorComponent.js';
+import SensorComponent from '../Components/SensorComponent.js';
+import EatWhenHungryComponent from '../Components/EatWhenHungryComponent.js';
 
 /**
  * @class Dot
@@ -24,8 +27,16 @@ export default class Dot extends Entity {
    * @param {string} [color] - The color of the dot. Defaults to a random color.
    * @param {object} [energyOptions={}] - Options for EnergyComponent.
    * @param {object} [metabolizerOptions={}] - Options for MetabolizerComponent.
+ * @param {boolean} [aiEnabled=false] - Whether AI components should be added.
+ * @param {number} [sensorRange=50] - Range for the SensorComponent.
+ * @param {number} [hungerThreshold=30] - Threshold for EatWhenHungryComponent.
+ * @param {number} [thrustPower=25] - Power for AcceleratorComponent.
+ * @param {number} [thrustEnergyCost=1] - Energy cost for AcceleratorComponent.
    */
-  constructor(id, x, y, velocityX, velocityY, color, energyOptions = {}, metabolizerOptions = {}) {
+  constructor(id, x, y, velocityX, velocityY, color,
+              energyOptions = {}, metabolizerOptions = {},
+              aiEnabled = false, sensorRange = 50, hungerThreshold = 30,
+              thrustPower = 25, thrustEnergyCost = 1) {
     super(id);
 
     // Add Transform Component
@@ -62,5 +73,12 @@ export default class Dot extends Entity {
     // The MetabolizerComponent constructor now handles its own defaults for the new properties.
     // We pass metabolizerOptions which might override these defaults.
     this.addComponent(new MetabolizerComponent(metabolizerOptions));
+
+    // Optionally add AI components
+    if (aiEnabled) {
+      this.addComponent(new AcceleratorComponent(thrustPower, thrustEnergyCost));
+      this.addComponent(new SensorComponent(sensorRange, ['Dit'])); // Dots look for Dits
+      this.addComponent(new EatWhenHungryComponent(hungerThreshold));
+    }
   }
 }
